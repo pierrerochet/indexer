@@ -18,6 +18,8 @@ class BiInverIndex:
         index (dict): L'index de la forme {'term':{'id_doc1':freq, 'id_doc2':freq, 'id_doc3':freq, ... }.
         plain_word_fr (Pattern): Le regex-pattern pour la détection des lemmes français.
         plain_word_en (Pattern): Le regex-pattern pour la détection des lemmes anglais.
+        fr_tagger (TreeTagger): Le tagger pour le français.
+        en_tagger (TreeTagger): Le tagger pour l'anglais.
         keep_path (str): Le nom du répertoire où seront stocké les fichiers indexés.
         index_name (str): le nom du fichier json pour sauvegarder l'index.
     """
@@ -30,7 +32,6 @@ class BiInverIndex:
         self.en_tagger = treetaggerwrapper.TreeTagger(TAGLANG="en")
         self.keep_path = "documentsIndex"
         self.index_name = "index.json"
-        
 
 
     def dump(self):
