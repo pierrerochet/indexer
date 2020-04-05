@@ -184,6 +184,24 @@ Sauvegarde l'index dans un fichier json "index.json".
 
 
     
+##### Method `get_freqs` {#indexer.BiInverIndex.get_freqs}
+
+
+
+    
+> `def get_freqs(self, text)`
+
+
+Récupère la fréquence des termes contenus dans un texte.
+
+Args (str):
+    Le textes à utiliser.
+
+Returns (dict):
+    Les fréquences des termes trouvés dans le texte.
+
+
+    
 ##### Method `keep_doc` {#indexer.BiInverIndex.keep_doc}
 
 

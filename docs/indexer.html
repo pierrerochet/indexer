@@ -52,8 +52,11 @@ class BiInverIndex:
         self.index = {}
         self.plain_word_fr = re.compile(&#34;ABR|ADJ|NAM|NOM|VER&#34;)
         self.plain_word_en = re.compile(&#34;JJ|NP|NN|VB&#34;)
+        self.fr_tagger = treetaggerwrapper.TreeTagger(TAGLANG=&#34;fr&#34;)
+        self.en_tagger = treetaggerwrapper.TreeTagger(TAGLANG=&#34;en&#34;)
         self.keep_path = &#34;documentsIndex&#34;
         self.index_name = &#34;index.json&#34;
+        
 
 
     def dump(self):
@@ -164,6 +167,32 @@ class BiInverIndex:
         return text, title
 
 
+    def get_freqs(self, text:str) -&gt; dict:
+        &#34;&#34;&#34;
+        Récupère la fréquence des termes contenus dans un texte.
+
+        Args (str):
+            Le textes à utiliser.
+        
+        Returns (dict):
+            Les fréquences des termes trouvés dans le texte.
+        &#34;&#34;&#34;
+        freq_term = {}
+        # Détection de la langue
+        lang = detect(text)
+        # Tagging du texte
+        tagged_text = self.__getattribute__(lang + &#34;_tagger&#34;).tag_text(text)
+        # On récupère seleument les fréquences des tokens ayant un lemma 
+        # qui match avec le pattern de la langue détectée
+        for token in tagged_text:
+            elements = token.split(&#34;\t&#34;)
+            if len(elements) == 3:
+                _, pos, lemma = elements
+                if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
+                    freq_term[lemma] = freq_term.get(lemma,0) + 1
+        return freq_term
+
+
     def add_doc(self, file:str , id:int):
         &#34;&#34;&#34;
         Ajoute un document à l&#39;index.
@@ -172,27 +201,16 @@ class BiInverIndex:
             file (str): Le chemin du document à ajouter.
             id: (int): l&#39;identifiant du document.
         &#34;&#34;&#34;
-
-        freq_term = {}
-
+        # On récupère le contenu du document
         text, _ = self.parse_doc(file)
-        lang = detect(text)
-
-        tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
-        tagged_text = tagger.tag_text(text)
-
-        for token in tagged_text:
-            elements = token.split(&#34;\t&#34;)
-            if len(elements) == 3:
-                _, pos, lemma = elements
-                if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
-                    freq_term[lemma] = freq_term.get(lemma,0) + 1
-
+        # On récupère la fréquence des termes qu&#39;il contient
+        freq_term = self.get_freqs(text)
+        # On met à jour l&#39;index
         for term, freq in freq_term.items():
             r = self.index.get(term, {})
             r.update({id:freq})
             self.index[term] = r
-        
+        # On sauvegarde le document
         self.keep_doc(file)
 
 
@@ -308,8 +326,11 @@ class BiInverIndex:
         self.index = {}
         self.plain_word_fr = re.compile(&#34;ABR|ADJ|NAM|NOM|VER&#34;)
         self.plain_word_en = re.compile(&#34;JJ|NP|NN|VB&#34;)
+        self.fr_tagger = treetaggerwrapper.TreeTagger(TAGLANG=&#34;fr&#34;)
+        self.en_tagger = treetaggerwrapper.TreeTagger(TAGLANG=&#34;en&#34;)
         self.keep_path = &#34;documentsIndex&#34;
         self.index_name = &#34;index.json&#34;
+        
 
 
     def dump(self):
@@ -420,6 +441,32 @@ class BiInverIndex:
         return text, title
 
 
+    def get_freqs(self, text:str) -&gt; dict:
+        &#34;&#34;&#34;
+        Récupère la fréquence des termes contenus dans un texte.
+
+        Args (str):
+            Le textes à utiliser.
+        
+        Returns (dict):
+            Les fréquences des termes trouvés dans le texte.
+        &#34;&#34;&#34;
+        freq_term = {}
+        # Détection de la langue
+        lang = detect(text)
+        # Tagging du texte
+        tagged_text = self.__getattribute__(lang + &#34;_tagger&#34;).tag_text(text)
+        # On récupère seleument les fréquences des tokens ayant un lemma 
+        # qui match avec le pattern de la langue détectée
+        for token in tagged_text:
+            elements = token.split(&#34;\t&#34;)
+            if len(elements) == 3:
+                _, pos, lemma = elements
+                if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
+                    freq_term[lemma] = freq_term.get(lemma,0) + 1
+        return freq_term
+
+
     def add_doc(self, file:str , id:int):
         &#34;&#34;&#34;
         Ajoute un document à l&#39;index.
@@ -428,27 +475,16 @@ class BiInverIndex:
             file (str): Le chemin du document à ajouter.
             id: (int): l&#39;identifiant du document.
         &#34;&#34;&#34;
-
-        freq_term = {}
-
+        # On récupère le contenu du document
         text, _ = self.parse_doc(file)
-        lang = detect(text)
-
-        tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
-        tagged_text = tagger.tag_text(text)
-
-        for token in tagged_text:
-            elements = token.split(&#34;\t&#34;)
-            if len(elements) == 3:
-                _, pos, lemma = elements
-                if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
-                    freq_term[lemma] = freq_term.get(lemma,0) + 1
-
+        # On récupère la fréquence des termes qu&#39;il contient
+        freq_term = self.get_freqs(text)
+        # On met à jour l&#39;index
         for term, freq in freq_term.items():
             r = self.index.get(term, {})
             r.update({id:freq})
             self.index[term] = r
-        
+        # On sauvegarde le document
         self.keep_doc(file)
 
 
@@ -543,27 +579,16 @@ class BiInverIndex:
         file (str): Le chemin du document à ajouter.
         id: (int): l&#39;identifiant du document.
     &#34;&#34;&#34;
-
-    freq_term = {}
-
+    # On récupère le contenu du document
     text, _ = self.parse_doc(file)
-    lang = detect(text)
-
-    tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
-    tagged_text = tagger.tag_text(text)
-
-    for token in tagged_text:
-        elements = token.split(&#34;\t&#34;)
-        if len(elements) == 3:
-            _, pos, lemma = elements
-            if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
-                freq_term[lemma] = freq_term.get(lemma,0) + 1
-
+    # On récupère la fréquence des termes qu&#39;il contient
+    freq_term = self.get_freqs(text)
+    # On met à jour l&#39;index
     for term, freq in freq_term.items():
         r = self.index.get(term, {})
         r.update({id:freq})
         self.index[term] = r
-    
+    # On sauvegarde le document
     self.keep_doc(file)</code></pre>
 </details>
 </dd>
@@ -770,6 +795,45 @@ Une demande de confirmation est demandée avant de les supprimer.</p>
         json.dump(self.index, doc, indent=4)</code></pre>
 </details>
 </dd>
+<dt id="indexer.BiInverIndex.get_freqs"><code class="name flex">
+<span>def <span class="ident">get_freqs</span></span>(<span>self, text)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Récupère la fréquence des termes contenus dans un texte.</p>
+<p>Args (str):
+Le textes à utiliser.</p>
+<p>Returns (dict):
+Les fréquences des termes trouvés dans le texte.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_freqs(self, text:str) -&gt; dict:
+    &#34;&#34;&#34;
+    Récupère la fréquence des termes contenus dans un texte.
+
+    Args (str):
+        Le textes à utiliser.
+    
+    Returns (dict):
+        Les fréquences des termes trouvés dans le texte.
+    &#34;&#34;&#34;
+    freq_term = {}
+    # Détection de la langue
+    lang = detect(text)
+    # Tagging du texte
+    tagged_text = self.__getattribute__(lang + &#34;_tagger&#34;).tag_text(text)
+    # On récupère seleument les fréquences des tokens ayant un lemma 
+    # qui match avec le pattern de la langue détectée
+    for token in tagged_text:
+        elements = token.split(&#34;\t&#34;)
+        if len(elements) == 3:
+            _, pos, lemma = elements
+            if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
+                freq_term[lemma] = freq_term.get(lemma,0) + 1
+    return freq_term</code></pre>
+</details>
+</dd>
 <dt id="indexer.BiInverIndex.keep_doc"><code class="name flex">
 <span>def <span class="ident">keep_doc</span></span>(<span>self, file)</span>
 </code></dt>
@@ -870,6 +934,7 @@ documentsIndex.</p>
 <li><code><a title="indexer.BiInverIndex.check_state" href="#indexer.BiInverIndex.check_state">check_state</a></code></li>
 <li><code><a title="indexer.BiInverIndex.clean_state" href="#indexer.BiInverIndex.clean_state">clean_state</a></code></li>
 <li><code><a title="indexer.BiInverIndex.dump" href="#indexer.BiInverIndex.dump">dump</a></code></li>
+<li><code><a title="indexer.BiInverIndex.get_freqs" href="#indexer.BiInverIndex.get_freqs">get_freqs</a></code></li>
 <li><code><a title="indexer.BiInverIndex.keep_doc" href="#indexer.BiInverIndex.keep_doc">keep_doc</a></code></li>
 <li><code><a title="indexer.BiInverIndex.parse_doc" href="#indexer.BiInverIndex.parse_doc">parse_doc</a></code></li>
 </ul>
