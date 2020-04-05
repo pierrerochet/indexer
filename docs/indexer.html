@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.5" />
+<title>indexer API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>indexer</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import glob
+import json
+import os
+import re
+import shutil
+import xml.etree.ElementTree as ET
+
+import treetaggerwrapper
+from langdetect import detect
+from termcolor import colored
+
+
+
+class BiInverIndex:
+    &#34;&#34;&#34;Indexe inversé bilingue français-anglais.
+
+    Attributes:
+        index (dict): L&#39;index de la forme {&#39;term&#39;:{&#39;id_doc1&#39;:freq, &#39;id_doc2&#39;:freq, &#39;id_doc3&#39;:freq, ... }.
+        plain_word_fr (Pattern): Le regex-pattern pour la détection des lemmes français.
+        plain_word_en (Pattern): Le regex-pattern pour la détection des lemmes anglais.
+        keep_path (str): Le nom du répertoire où seront stocké les fichiers indexés.
+        index_name (str): le nom du fichier json pour sauvegarder l&#39;index.
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.index = {}
+        self.plain_word_fr = re.compile(&#34;ABR|ADJ|NAM|NOM|VER&#34;)
+        self.plain_word_en = re.compile(&#34;JJ|NP|NN|VB&#34;)
+        self.keep_path = &#34;documentsIndex&#34;
+        self.index_name = &#34;index.json&#34;
+
+
+    def dump(self):
+        &#34;&#34;&#34;
+        Sauvegarde l&#39;index dans un fichier json &#34;index.json&#34;.
+
+        &#34;&#34;&#34;
+        with open(self.index_name, &#34;w&#34;, encoding=&#34;utf8&#34;) as doc:
+            json.dump(self.index, doc, indent=4)
+
+
+    def keep_doc(self, file:str):
+        &#34;&#34;&#34;
+        Copie un document dans le dossier de sauvegarde :
+        documentsIndex.
+
+        Args:
+            file (str): Le chemin du fichier à copier.
+
+        &#34;&#34;&#34;
+        if not os.path.isdir(self.keep_path):
+            os.mkdir(self.keep_path)
+        shutil.copy(file, self.keep_path)
+
+
+    def check_state(self):
+        &#34;&#34;&#34;
+        Récupère l&#39;état actuel de l&#39;index.
+        Utilisé dans le cas d&#39;un mise à jour de l&#39;index.
+
+        &#34;&#34;&#34;
+        if os.path.isfile(self.index_name) and os.path.isdir(self.keep_path):
+            json_index = open(self.index_name, &#34;r&#34;, encoding=&#34;utf8&#34;)
+            current_index = json.load(json_index)
+            json_index.close()
+            self.index = current_index
+            current_docs = os.listdir(self.keep_path)
+            id = len(current_docs)
+        else:
+            current_docs = []
+            id = 0
+        return current_docs, id
+
+    def clean_state(self):
+        &#34;&#34;&#34;
+        Tente de nettoyer l&#39;environnement d&#39;index
+        Vérifie si le dossier &#34;&#34;documentsIndex&#34; et le fichier &#34;index.json&#34; existent déjà.
+        Une demande de confirmation est demandée avant de les supprimer.
+        &#34;&#34;&#34;
+        if os.path.exists(self.keep_path) :
+            if os.path.isdir(self.keep_path):
+                resp = None
+                while resp != &#34;n&#34; and resp != &#34;y&#34;:
+                    resp = input( colored(&#34;Warning&#34;, &#34;yellow&#34;) + &#34; Le dossier &#39;documentsIndex&#39; existe déjà, son contenu sera supprimé. Continuer ? (Y/N) &#34; )
+                    resp = resp.lower()
+                if resp == &#34;n&#34; : return False
+                for file in glob.glob(self.keep_path + &#34;/*&#34;):
+                    os.remove(file)
+        
+        if os.path.exists(self.index_name) :
+            if os.path.isfile(self.index_name):
+                resp = None
+                while resp != &#34;n&#34; and resp != &#34;y&#34;:
+                    resp = input( colored(&#34;Warning&#34;, &#34;yellow&#34;) + &#34; Le fichier &#39;index.json&#39; existe déjà, son contenu sera supprimé. Continuer ? (Y/N) &#34; )
+                    resp = resp.lower()
+                if resp == &#34;n&#34; : return False
+                os.remove(self.index_name)
+
+        return True
+
+
+    def parse_doc(self, xml_file:str) -&gt; (str, str):
+        &#34;&#34;&#34;
+        Parse un document xml de la forme :
+        ```xml
+        &lt;article&gt;
+            &lt;titre&gt; &lt;/titre&gt;
+            &lt;texte&gt; &lt;/texte&gt;
+        &lt;/article&gt;
+        ```
+
+        Args:
+            xml_file (str): Le chemin du fichier xml.
+
+        Returns:
+            text (str): Le contenu de la balise texte du fichier.
+            title (str): Le contenu de la balise title du fichier.
+        &#34;&#34;&#34;
+        doc = ET.parse(xml_file)
+        root = doc.getroot()
+        text = root.find(&#34;texte&#34;).text
+        title = root.find(&#34;titre&#34;).text
+        return text, title
+
+
+    def add_doc(self, file:str , id:int):
+        &#34;&#34;&#34;
+        Ajoute un document à l&#39;index.
+
+        Args:
+            file (str): Le chemin du document à ajouter.
+            id: (int): l&#39;identifiant du document.
+        &#34;&#34;&#34;
+
+        freq_term = {}
+
+        text, _ = self.parse_doc(file)
+        lang = detect(text)
+
+        tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
+        tagged_text = self.tag_text(text)
+
+        for token in tagged_text:
+            elements = token.split(&#34;\t&#34;)
+            if len(elements) == 3:
+                _, pos, lemma = elements
+                if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
+                    freq_term[lemma] = freq_term.get(lemma,0) + 1
+
+        for term, freq in freq_term.items():
+            r = self.index.get(term, {})
+            r.update({id:freq})
+            self.index[term] = r
+        
+        self.keep_doc(file)
+
+
+    def build_index(self, corpus_path:str , update:bool = False):
+        &#34;&#34;&#34;
+        Construit l&#39;index inversé à partir 
+        d&#39;un réperoire contenant des fichiers xml à indexer.
+        Les fichiers doivent être sous la forme :
+        ```xml
+        &lt;article&gt;
+            &lt;titre&gt; &lt;/titre&gt;
+            &lt;texte&gt; &lt;/texte&gt;
+        &lt;/article&gt;
+        ```
+        Args:
+            corpus_path (str): Le chemin du répertoire contenant les fichiers à indexer.
+            update (bool): Indique si c&#39;est une mise à jour de l&#39;index. 
+                        Dans ce cas l&#39;état de l&#39;index actuel sera récupéré. 
+                        Sinon un nouvel index est crée.  
+                        Si un index existe déjà il sera supprimé avec accord de l&#39;utilisateur
+                        False par défaut.  
+        
+        &#34;&#34;&#34; 
+
+        # Si c&#39;est une mise à jour de l&#39;index on récupère l&#39;état actuel de l&#39;index
+        if update == True :
+            current_docs, id = self.check_state()
+            print(&#34;\n--- Mise à jour de l&#39;index&#34;)
+
+        # Sinon on vérifie qu&#39;il n&#39;y ait pas de fichier qui entre en conflit
+        # Si un index est détecté on le supprime
+        # Si ce n&#39;est pas possible alors on arrête le programme
+        # Si le nettoyage est confirmé alors on initialise
+        # notre liste de documents déjà traités et l&#39;id 
+        else :
+            if self.clean_state() == False : return
+            print(&#34;\n--- Construction de l&#39;index&#34;)
+            current_docs, id = [], 0
+
+        # On récupère le chemin des fichiers à indexer
+        files = glob.glob(corpus_path + &#34;/*&#34;)
+
+
+        for file in files:
+
+            # On affiche le nom du fichier en cours de traitement 
+            file_name = file.split(&#34;/&#34;)[-1]
+            print(&#34;fichier&#34;, file_name, sep=&#34; :: &#34;, end=&#34; :\t&#34;)
+
+            # Si le document a déjà été indexé, on l&#39;ignore
+            if file_name in current_docs:
+                print( colored(&#34;Warning&#34;, &#34;yellow&#34;), &#34;Document déjà indexé, il sera ignoré&#34;, sep=&#34; :\t&#34;)
+            
+            # Si le document n&#39;a pas déjà été indexé
+            # - on l&#39;ajoute à l&#39;index, 
+            # - on le place dans notre liste des documents traités
+            # - on incrémente l&#39;id
+            else:
+                self.add_doc(file, id)
+                current_docs.append(file)
+                id += 1
+                print(colored(&#34;OK&#34;, &#34;green&#34;))
+
+        # Quand tous les documents du dossier ont été traités
+        # on sauvegarde notre index
+        self.dump()
+        print(&#34;Terminé.&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="indexer.BiInverIndex"><code class="flex name class">
+<span>class <span class="ident">BiInverIndex</span></span>
+</code></dt>
+<dd>
+<section class="desc"><p>Indexe inversé bilingue français-anglais.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>index</code></strong> :&ensp;<code>dict</code></dt>
+<dd>L'index de la forme {'term':{'id_doc1':freq, 'id_doc2':freq, 'id_doc3':freq, &hellip; }.</dd>
+<dt><strong><code>plain_word_fr</code></strong> :&ensp;<code>Pattern</code></dt>
+<dd>Le regex-pattern pour la détection des lemmes français.</dd>
+<dt><strong><code>plain_word_en</code></strong> :&ensp;<code>Pattern</code></dt>
+<dd>Le regex-pattern pour la détection des lemmes anglais.</dd>
+<dt><strong><code>keep_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le nom du répertoire où seront stocké les fichiers indexés.</dd>
+<dt><strong><code>index_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>le nom du fichier json pour sauvegarder l'index.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BiInverIndex:
+    &#34;&#34;&#34;Indexe inversé bilingue français-anglais.
+
+    Attributes:
+        index (dict): L&#39;index de la forme {&#39;term&#39;:{&#39;id_doc1&#39;:freq, &#39;id_doc2&#39;:freq, &#39;id_doc3&#39;:freq, ... }.
+        plain_word_fr (Pattern): Le regex-pattern pour la détection des lemmes français.
+        plain_word_en (Pattern): Le regex-pattern pour la détection des lemmes anglais.
+        keep_path (str): Le nom du répertoire où seront stocké les fichiers indexés.
+        index_name (str): le nom du fichier json pour sauvegarder l&#39;index.
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.index = {}
+        self.plain_word_fr = re.compile(&#34;ABR|ADJ|NAM|NOM|VER&#34;)
+        self.plain_word_en = re.compile(&#34;JJ|NP|NN|VB&#34;)
+        self.keep_path = &#34;documentsIndex&#34;
+        self.index_name = &#34;index.json&#34;
+
+
+    def dump(self):
+        &#34;&#34;&#34;
+        Sauvegarde l&#39;index dans un fichier json &#34;index.json&#34;.
+
+        &#34;&#34;&#34;
+        with open(self.index_name, &#34;w&#34;, encoding=&#34;utf8&#34;) as doc:
+            json.dump(self.index, doc, indent=4)
+
+
+    def keep_doc(self, file:str):
+        &#34;&#34;&#34;
+        Copie un document dans le dossier de sauvegarde :
+        documentsIndex.
+
+        Args:
+            file (str): Le chemin du fichier à copier.
+
+        &#34;&#34;&#34;
+        if not os.path.isdir(self.keep_path):
+            os.mkdir(self.keep_path)
+        shutil.copy(file, self.keep_path)
+
+
+    def check_state(self):
+        &#34;&#34;&#34;
+        Récupère l&#39;état actuel de l&#39;index.
+        Utilisé dans le cas d&#39;un mise à jour de l&#39;index.
+
+        &#34;&#34;&#34;
+        if os.path.isfile(self.index_name) and os.path.isdir(self.keep_path):
+            json_index = open(self.index_name, &#34;r&#34;, encoding=&#34;utf8&#34;)
+            current_index = json.load(json_index)
+            json_index.close()
+            self.index = current_index
+            current_docs = os.listdir(self.keep_path)
+            id = len(current_docs)
+        else:
+            current_docs = []
+            id = 0
+        return current_docs, id
+
+    def clean_state(self):
+        &#34;&#34;&#34;
+        Tente de nettoyer l&#39;environnement d&#39;index
+        Vérifie si le dossier &#34;&#34;documentsIndex&#34; et le fichier &#34;index.json&#34; existent déjà.
+        Une demande de confirmation est demandée avant de les supprimer.
+        &#34;&#34;&#34;
+        if os.path.exists(self.keep_path) :
+            if os.path.isdir(self.keep_path):
+                resp = None
+                while resp != &#34;n&#34; and resp != &#34;y&#34;:
+                    resp = input( colored(&#34;Warning&#34;, &#34;yellow&#34;) + &#34; Le dossier &#39;documentsIndex&#39; existe déjà, son contenu sera supprimé. Continuer ? (Y/N) &#34; )
+                    resp = resp.lower()
+                if resp == &#34;n&#34; : return False
+                for file in glob.glob(self.keep_path + &#34;/*&#34;):
+                    os.remove(file)
+        
+        if os.path.exists(self.index_name) :
+            if os.path.isfile(self.index_name):
+                resp = None
+                while resp != &#34;n&#34; and resp != &#34;y&#34;:
+                    resp = input( colored(&#34;Warning&#34;, &#34;yellow&#34;) + &#34; Le fichier &#39;index.json&#39; existe déjà, son contenu sera supprimé. Continuer ? (Y/N) &#34; )
+                    resp = resp.lower()
+                if resp == &#34;n&#34; : return False
+                os.remove(self.index_name)
+
+        return True
+
+
+    def parse_doc(self, xml_file:str) -&gt; (str, str):
+        &#34;&#34;&#34;
+        Parse un document xml de la forme :
+        ```xml
+        &lt;article&gt;
+            &lt;titre&gt; &lt;/titre&gt;
+            &lt;texte&gt; &lt;/texte&gt;
+        &lt;/article&gt;
+        ```
+
+        Args:
+            xml_file (str): Le chemin du fichier xml.
+
+        Returns:
+            text (str): Le contenu de la balise texte du fichier.
+            title (str): Le contenu de la balise title du fichier.
+        &#34;&#34;&#34;
+        doc = ET.parse(xml_file)
+        root = doc.getroot()
+        text = root.find(&#34;texte&#34;).text
+        title = root.find(&#34;titre&#34;).text
+        return text, title
+
+
+    def add_doc(self, file:str , id:int):
+        &#34;&#34;&#34;
+        Ajoute un document à l&#39;index.
+
+        Args:
+            file (str): Le chemin du document à ajouter.
+            id: (int): l&#39;identifiant du document.
+        &#34;&#34;&#34;
+
+        freq_term = {}
+
+        text, _ = self.parse_doc(file)
+        lang = detect(text)
+
+        tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
+        tagged_text = self.tag_text(text)
+
+        for token in tagged_text:
+            elements = token.split(&#34;\t&#34;)
+            if len(elements) == 3:
+                _, pos, lemma = elements
+                if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
+                    freq_term[lemma] = freq_term.get(lemma,0) + 1
+
+        for term, freq in freq_term.items():
+            r = self.index.get(term, {})
+            r.update({id:freq})
+            self.index[term] = r
+        
+        self.keep_doc(file)
+
+
+    def build_index(self, corpus_path:str , update:bool = False):
+        &#34;&#34;&#34;
+        Construit l&#39;index inversé à partir 
+        d&#39;un réperoire contenant des fichiers xml à indexer.
+        Les fichiers doivent être sous la forme :
+        ```xml
+        &lt;article&gt;
+            &lt;titre&gt; &lt;/titre&gt;
+            &lt;texte&gt; &lt;/texte&gt;
+        &lt;/article&gt;
+        ```
+        Args:
+            corpus_path (str): Le chemin du répertoire contenant les fichiers à indexer.
+            update (bool): Indique si c&#39;est une mise à jour de l&#39;index. 
+                        Dans ce cas l&#39;état de l&#39;index actuel sera récupéré. 
+                        Sinon un nouvel index est crée.  
+                        Si un index existe déjà il sera supprimé avec accord de l&#39;utilisateur
+                        False par défaut.  
+        
+        &#34;&#34;&#34; 
+
+        # Si c&#39;est une mise à jour de l&#39;index on récupère l&#39;état actuel de l&#39;index
+        if update == True :
+            current_docs, id = self.check_state()
+            print(&#34;\n--- Mise à jour de l&#39;index&#34;)
+
+        # Sinon on vérifie qu&#39;il n&#39;y ait pas de fichier qui entre en conflit
+        # Si un index est détecté on le supprime
+        # Si ce n&#39;est pas possible alors on arrête le programme
+        # Si le nettoyage est confirmé alors on initialise
+        # notre liste de documents déjà traités et l&#39;id 
+        else :
+            if self.clean_state() == False : return
+            print(&#34;\n--- Construction de l&#39;index&#34;)
+            current_docs, id = [], 0
+
+        # On récupère le chemin des fichiers à indexer
+        files = glob.glob(corpus_path + &#34;/*&#34;)
+
+
+        for file in files:
+
+            # On affiche le nom du fichier en cours de traitement 
+            file_name = file.split(&#34;/&#34;)[-1]
+            print(&#34;fichier&#34;, file_name, sep=&#34; :: &#34;, end=&#34; :\t&#34;)
+
+            # Si le document a déjà été indexé, on l&#39;ignore
+            if file_name in current_docs:
+                print( colored(&#34;Warning&#34;, &#34;yellow&#34;), &#34;Document déjà indexé, il sera ignoré&#34;, sep=&#34; :\t&#34;)
+            
+            # Si le document n&#39;a pas déjà été indexé
+            # - on l&#39;ajoute à l&#39;index, 
+            # - on le place dans notre liste des documents traités
+            # - on incrémente l&#39;id
+            else:
+                self.add_doc(file, id)
+                current_docs.append(file)
+                id += 1
+                print(colored(&#34;OK&#34;, &#34;green&#34;))
+
+        # Quand tous les documents du dossier ont été traités
+        # on sauvegarde notre index
+        self.dump()
+        print(&#34;Terminé.&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="indexer.BiInverIndex.add_doc"><code class="name flex">
+<span>def <span class="ident">add_doc</span></span>(<span>self, file, id)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Ajoute un document à l'index.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le chemin du document à ajouter.</dd>
+<dt><strong><code>id</code></strong></dt>
+<dd>(int): l'identifiant du document.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_doc(self, file:str , id:int):
+    &#34;&#34;&#34;
+    Ajoute un document à l&#39;index.
+
+    Args:
+        file (str): Le chemin du document à ajouter.
+        id: (int): l&#39;identifiant du document.
+    &#34;&#34;&#34;
+
+    freq_term = {}
+
+    text, _ = self.parse_doc(file)
+    lang = detect(text)
+
+    tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
+    tagged_text = self.tag_text(text)
+
+    for token in tagged_text:
+        elements = token.split(&#34;\t&#34;)
+        if len(elements) == 3:
+            _, pos, lemma = elements
+            if re.match(self.__getattribute__(&#34;plain_word_&#34; + lang), pos) != None:
+                freq_term[lemma] = freq_term.get(lemma,0) + 1
+
+    for term, freq in freq_term.items():
+        r = self.index.get(term, {})
+        r.update({id:freq})
+        self.index[term] = r
+    
+    self.keep_doc(file)</code></pre>
+</details>
+</dd>
+<dt id="indexer.BiInverIndex.build_index"><code class="name flex">
+<span>def <span class="ident">build_index</span></span>(<span>self, corpus_path, update=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Construit l'index inversé à partir
+d'un réperoire contenant des fichiers xml à indexer.
+Les fichiers doivent être sous la forme :</p>
+<pre><code class="xml">&lt;article&gt;
+    &lt;titre&gt; &lt;/titre&gt;
+    &lt;texte&gt; &lt;/texte&gt;
+&lt;/article&gt;
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>corpus_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le chemin du répertoire contenant les fichiers à indexer.</dd>
+<dt><strong><code>update</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Indique si c'est une mise à jour de l'index.
+Dans ce cas l'état de l'index actuel sera récupéré.
+Sinon un nouvel index est crée.<br>
+Si un index existe déjà il sera supprimé avec accord de l'utilisateur
+False par défaut.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build_index(self, corpus_path:str , update:bool = False):
+    &#34;&#34;&#34;
+    Construit l&#39;index inversé à partir 
+    d&#39;un réperoire contenant des fichiers xml à indexer.
+    Les fichiers doivent être sous la forme :
+    ```xml
+    &lt;article&gt;
+        &lt;titre&gt; &lt;/titre&gt;
+        &lt;texte&gt; &lt;/texte&gt;
+    &lt;/article&gt;
+    ```
+    Args:
+        corpus_path (str): Le chemin du répertoire contenant les fichiers à indexer.
+        update (bool): Indique si c&#39;est une mise à jour de l&#39;index. 
+                    Dans ce cas l&#39;état de l&#39;index actuel sera récupéré. 
+                    Sinon un nouvel index est crée.  
+                    Si un index existe déjà il sera supprimé avec accord de l&#39;utilisateur
+                    False par défaut.  
+    
+    &#34;&#34;&#34; 
+
+    # Si c&#39;est une mise à jour de l&#39;index on récupère l&#39;état actuel de l&#39;index
+    if update == True :
+        current_docs, id = self.check_state()
+        print(&#34;\n--- Mise à jour de l&#39;index&#34;)
+
+    # Sinon on vérifie qu&#39;il n&#39;y ait pas de fichier qui entre en conflit
+    # Si un index est détecté on le supprime
+    # Si ce n&#39;est pas possible alors on arrête le programme
+    # Si le nettoyage est confirmé alors on initialise
+    # notre liste de documents déjà traités et l&#39;id 
+    else :
+        if self.clean_state() == False : return
+        print(&#34;\n--- Construction de l&#39;index&#34;)
+        current_docs, id = [], 0
+
+    # On récupère le chemin des fichiers à indexer
+    files = glob.glob(corpus_path + &#34;/*&#34;)
+
+
+    for file in files:
+
+        # On affiche le nom du fichier en cours de traitement 
+        file_name = file.split(&#34;/&#34;)[-1]
+        print(&#34;fichier&#34;, file_name, sep=&#34; :: &#34;, end=&#34; :\t&#34;)
+
+        # Si le document a déjà été indexé, on l&#39;ignore
+        if file_name in current_docs:
+            print( colored(&#34;Warning&#34;, &#34;yellow&#34;), &#34;Document déjà indexé, il sera ignoré&#34;, sep=&#34; :\t&#34;)
+        
+        # Si le document n&#39;a pas déjà été indexé
+        # - on l&#39;ajoute à l&#39;index, 
+        # - on le place dans notre liste des documents traités
+        # - on incrémente l&#39;id
+        else:
+            self.add_doc(file, id)
+            current_docs.append(file)
+            id += 1
+            print(colored(&#34;OK&#34;, &#34;green&#34;))
+
+    # Quand tous les documents du dossier ont été traités
+    # on sauvegarde notre index
+    self.dump()
+    print(&#34;Terminé.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="indexer.BiInverIndex.check_state"><code class="name flex">
+<span>def <span class="ident">check_state</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Récupère l'état actuel de l'index.
+Utilisé dans le cas d'un mise à jour de l'index.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_state(self):
+    &#34;&#34;&#34;
+    Récupère l&#39;état actuel de l&#39;index.
+    Utilisé dans le cas d&#39;un mise à jour de l&#39;index.
+
+    &#34;&#34;&#34;
+    if os.path.isfile(self.index_name) and os.path.isdir(self.keep_path):
+        json_index = open(self.index_name, &#34;r&#34;, encoding=&#34;utf8&#34;)
+        current_index = json.load(json_index)
+        json_index.close()
+        self.index = current_index
+        current_docs = os.listdir(self.keep_path)
+        id = len(current_docs)
+    else:
+        current_docs = []
+        id = 0
+    return current_docs, id</code></pre>
+</details>
+</dd>
+<dt id="indexer.BiInverIndex.clean_state"><code class="name flex">
+<span>def <span class="ident">clean_state</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Tente de nettoyer l'environnement d'index
+Vérifie si le dossier ""documentsIndex" et le fichier "index.json" existent déjà.
+Une demande de confirmation est demandée avant de les supprimer.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clean_state(self):
+    &#34;&#34;&#34;
+    Tente de nettoyer l&#39;environnement d&#39;index
+    Vérifie si le dossier &#34;&#34;documentsIndex&#34; et le fichier &#34;index.json&#34; existent déjà.
+    Une demande de confirmation est demandée avant de les supprimer.
+    &#34;&#34;&#34;
+    if os.path.exists(self.keep_path) :
+        if os.path.isdir(self.keep_path):
+            resp = None
+            while resp != &#34;n&#34; and resp != &#34;y&#34;:
+                resp = input( colored(&#34;Warning&#34;, &#34;yellow&#34;) + &#34; Le dossier &#39;documentsIndex&#39; existe déjà, son contenu sera supprimé. Continuer ? (Y/N) &#34; )
+                resp = resp.lower()
+            if resp == &#34;n&#34; : return False
+            for file in glob.glob(self.keep_path + &#34;/*&#34;):
+                os.remove(file)
+    
+    if os.path.exists(self.index_name) :
+        if os.path.isfile(self.index_name):
+            resp = None
+            while resp != &#34;n&#34; and resp != &#34;y&#34;:
+                resp = input( colored(&#34;Warning&#34;, &#34;yellow&#34;) + &#34; Le fichier &#39;index.json&#39; existe déjà, son contenu sera supprimé. Continuer ? (Y/N) &#34; )
+                resp = resp.lower()
+            if resp == &#34;n&#34; : return False
+            os.remove(self.index_name)
+
+    return True</code></pre>
+</details>
+</dd>
+<dt id="indexer.BiInverIndex.dump"><code class="name flex">
+<span>def <span class="ident">dump</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sauvegarde l'index dans un fichier json "index.json".</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dump(self):
+    &#34;&#34;&#34;
+    Sauvegarde l&#39;index dans un fichier json &#34;index.json&#34;.
+
+    &#34;&#34;&#34;
+    with open(self.index_name, &#34;w&#34;, encoding=&#34;utf8&#34;) as doc:
+        json.dump(self.index, doc, indent=4)</code></pre>
+</details>
+</dd>
+<dt id="indexer.BiInverIndex.keep_doc"><code class="name flex">
+<span>def <span class="ident">keep_doc</span></span>(<span>self, file)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Copie un document dans le dossier de sauvegarde :
+documentsIndex.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le chemin du fichier à copier.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def keep_doc(self, file:str):
+    &#34;&#34;&#34;
+    Copie un document dans le dossier de sauvegarde :
+    documentsIndex.
+
+    Args:
+        file (str): Le chemin du fichier à copier.
+
+    &#34;&#34;&#34;
+    if not os.path.isdir(self.keep_path):
+        os.mkdir(self.keep_path)
+    shutil.copy(file, self.keep_path)</code></pre>
+</details>
+</dd>
+<dt id="indexer.BiInverIndex.parse_doc"><code class="name flex">
+<span>def <span class="ident">parse_doc</span></span>(<span>self, xml_file)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Parse un document xml de la forme :</p>
+<pre><code class="xml">&lt;article&gt;
+    &lt;titre&gt; &lt;/titre&gt;
+    &lt;texte&gt; &lt;/texte&gt;
+&lt;/article&gt;
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>xml_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le chemin du fichier xml.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>text</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le contenu de la balise texte du fichier.</dd>
+<dt><strong><code>title</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le contenu de la balise title du fichier.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_doc(self, xml_file:str) -&gt; (str, str):
+    &#34;&#34;&#34;
+    Parse un document xml de la forme :
+    ```xml
+    &lt;article&gt;
+        &lt;titre&gt; &lt;/titre&gt;
+        &lt;texte&gt; &lt;/texte&gt;
+    &lt;/article&gt;
+    ```
+
+    Args:
+        xml_file (str): Le chemin du fichier xml.
+
+    Returns:
+        text (str): Le contenu de la balise texte du fichier.
+        title (str): Le contenu de la balise title du fichier.
+    &#34;&#34;&#34;
+    doc = ET.parse(xml_file)
+    root = doc.getroot()
+    text = root.find(&#34;texte&#34;).text
+    title = root.find(&#34;titre&#34;).text
+    return text, title</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="indexer.BiInverIndex" href="#indexer.BiInverIndex">BiInverIndex</a></code></h4>
+<ul class="two-column">
+<li><code><a title="indexer.BiInverIndex.add_doc" href="#indexer.BiInverIndex.add_doc">add_doc</a></code></li>
+<li><code><a title="indexer.BiInverIndex.build_index" href="#indexer.BiInverIndex.build_index">build_index</a></code></li>
+<li><code><a title="indexer.BiInverIndex.check_state" href="#indexer.BiInverIndex.check_state">check_state</a></code></li>
+<li><code><a title="indexer.BiInverIndex.clean_state" href="#indexer.BiInverIndex.clean_state">clean_state</a></code></li>
+<li><code><a title="indexer.BiInverIndex.dump" href="#indexer.BiInverIndex.dump">dump</a></code></li>
+<li><code><a title="indexer.BiInverIndex.keep_doc" href="#indexer.BiInverIndex.keep_doc">keep_doc</a></code></li>
+<li><code><a title="indexer.BiInverIndex.parse_doc" href="#indexer.BiInverIndex.parse_doc">parse_doc</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

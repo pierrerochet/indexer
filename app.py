@@ -11,7 +11,8 @@ if __name__ == "__main__":
 
     CORPUS_PATH = "./corpus/initiaux"
     
-    index.update_index(CORPUS_PATH)
+    index.build_index(CORPUS_PATH)
 
     CORPUS_PATH = "./corpus/complémentaires"
-    index.update_index(CORPUS_PATH, update=True)
+    index.build_index(CORPUS_PATH, update=True)
+    

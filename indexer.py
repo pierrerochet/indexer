@@ -7,9 +7,20 @@ import xml.etree.ElementTree as ET
 
 import treetaggerwrapper
 from langdetect import detect
+from termcolor import colored
+
 
 
 class BiInverIndex:
+    """Indexe inversé bilingue français-anglais.
+
+    Attributes:
+        index (dict): L'index de la forme {'term':{'id_doc1':freq, 'id_doc2':freq, 'id_doc3':freq, ... }.
+        plain_word_fr (Pattern): Le regex-pattern pour la détection des lemmes français.
+        plain_word_en (Pattern): Le regex-pattern pour la détection des lemmes anglais.
+        keep_path (str): Le nom du répertoire où seront stocké les fichiers indexés.
+        index_name (str): le nom du fichier json pour sauvegarder l'index.
+    """
 
     def __init__(self):
         self.index = {}
@@ -18,17 +29,36 @@ class BiInverIndex:
         self.keep_path = "documentsIndex"
         self.index_name = "index.json"
 
-    def dump(self, path):
-        with open(path, "w", encoding="utf8") as doc:
+
+    def dump(self):
+        """
+        Sauvegarde l'index dans un fichier json "index.json".
+
+        """
+        with open(self.index_name, "w", encoding="utf8") as doc:
             json.dump(self.index, doc, indent=4)
 
-    def keep_doc(self, file):
+
+    def keep_doc(self, file:str):
+        """
+        Copie un document dans le dossier de sauvegarde :
+        documentsIndex.
+
+        Args:
+            file (str): Le chemin du fichier à copier.
+
+        """
         if not os.path.isdir(self.keep_path):
             os.mkdir(self.keep_path)
         shutil.copy(file, self.keep_path)
 
 
-    def __check_state(self):
+    def check_state(self):
+        """
+        Récupère l'état actuel de l'index.
+        Utilisé dans le cas d'un mise à jour de l'index.
+
+        """
         if os.path.isfile(self.index_name) and os.path.isdir(self.keep_path):
             json_index = open(self.index_name, "r", encoding="utf8")
             current_index = json.load(json_index)
@@ -41,12 +71,17 @@ class BiInverIndex:
             id = 0
         return current_docs, id
 
-    def __clean_state(self):
+    def clean_state(self):
+        """
+        Tente de nettoyer l'environnement d'index
+        Vérifie si le dossier ""documentsIndex" et le fichier "index.json" existent déjà.
+        Une demande de confirmation est demandée avant de les supprimer.
+        """
         if os.path.exists(self.keep_path) :
             if os.path.isdir(self.keep_path):
                 resp = None
                 while resp != "n" and resp != "y":
-                    resp = input( "Warning ! Le dossier 'documentsIndex' existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
+                    resp = input( colored("Warning", "yellow") + " Le dossier 'documentsIndex' existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
                     resp = resp.lower()
                 if resp == "n" : return False
                 for file in glob.glob(self.keep_path + "/*"):
@@ -56,28 +91,54 @@ class BiInverIndex:
             if os.path.isfile(self.index_name):
                 resp = None
                 while resp != "n" and resp != "y":
-                    resp = input( "Warning ! Le fichier 'index.json' existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
+                    resp = input( colored("Warning", "yellow") + " Le fichier 'index.json' existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
                     resp = resp.lower()
                 if resp == "n" : return False
                 os.remove(self.index_name)
 
         return True
 
-    def __parse_doc(self, file):
-        doc = ET.parse(file)
+
+    def parse_doc(self, xml_file:str) -> (str, str):
+        """
+        Parse un document xml de la forme :
+        ```xml
+        <article>
+            <titre> </titre>
+            <texte> </texte>
+        </article>
+        ```
+
+        Args:
+            xml_file (str): Le chemin du fichier xml.
+
+        Returns:
+            text (str): Le contenu de la balise texte du fichier.
+            title (str): Le contenu de la balise title du fichier.
+        """
+        doc = ET.parse(xml_file)
         root = doc.getroot()
         text = root.find("texte").text
         title = root.find("titre").text
         return text, title
 
-    def __add_doc(self, file, id = 0):
+
+    def add_doc(self, file:str , id:int):
+        """
+        Ajoute un document à l'index.
+
+        Args:
+            file (str): Le chemin du document à ajouter.
+            id: (int): l'identifiant du document.
+        """
+
         freq_term = {}
 
-        text, _ = self.__parse_doc(file)
+        text, _ = self.parse_doc(file)
         lang = detect(text)
 
         tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
-        tagged_text = tagger.tag_text(text)
+        tagged_text = self.tag_text(text)
 
         for token in tagged_text:
             elements = token.split("\t")
@@ -94,28 +155,67 @@ class BiInverIndex:
         self.keep_doc(file)
 
 
-    def update_index(self, corpus_path, update = False):
+    def build_index(self, corpus_path:str , update:bool = False):
+        """
+        Construit l'index inversé à partir 
+        d'un réperoire contenant des fichiers xml à indexer.
+        Les fichiers doivent être sous la forme :
+        ```xml
+        <article>
+            <titre> </titre>
+            <texte> </texte>
+        </article>
+        ```
+        Args:
+            corpus_path (str): Le chemin du répertoire contenant les fichiers à indexer.
+            update (bool): Indique si c'est une mise à jour de l'index. 
+                        Dans ce cas l'état de l'index actuel sera récupéré. 
+                        Sinon un nouvel index est crée.  
+                        Si un index existe déjà il sera supprimé avec accord de l'utilisateur
+                        False par défaut.  
         
+        """ 
+
+        # Si c'est une mise à jour de l'index on récupère l'état actuel de l'index
         if update == True :
-            current_docs, id = self.__check_state()
+            current_docs, id = self.check_state()
             print("\n--- Mise à jour de l'index")
 
+        # Sinon on vérifie qu'il n'y ait pas de fichier qui entre en conflit
+        # Si un index est détecté on le supprime
+        # Si ce n'est pas possible alors on arrête le programme
+        # Si le nettoyage est confirmé alors on initialise
+        # notre liste de documents déjà traités et l'id 
         else :
-            if self.__clean_state() == False : return
+            if self.clean_state() == False : return
             print("\n--- Construction de l'index")
             current_docs, id = [], 0
 
+        # On récupère le chemin des fichiers à indexer
         files = glob.glob(corpus_path + "/*")
-        for file in files:
-            file_name = file.split("/")[-1]
-            print("fichier :: " + file_name)
 
+
+        for file in files:
+
+            # On affiche le nom du fichier en cours de traitement 
+            file_name = file.split("/")[-1]
+            print("fichier", file_name, sep=" :: ", end=" :\t")
+
+            # Si le document a déjà été indexé, on l'ignore
             if file_name in current_docs:
-                print("ERROR :: Le document est déjà indexé, il sera ignoré")
+                print( colored("Warning", "yellow"), "Document déjà indexé, il sera ignoré", sep=" :\t")
+            
+            # Si le document n'a pas déjà été indexé
+            # - on l'ajoute à l'index, 
+            # - on le place dans notre liste des documents traités
+            # - on incrémente l'id
             else:
-                self.__add_doc(file, id)
+                self.add_doc(file, id)
                 current_docs.append(file)
                 id += 1
+                print(colored("OK", "green"))
 
-        self.dump(self.index_name)
+        # Quand tous les documents du dossier ont été traités
+        # on sauvegarde notre index
+        self.dump()
         print("Terminé.")
