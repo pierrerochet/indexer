@@ -58,7 +58,12 @@ class BiInverIndex:
         Récupère l'état actuel de l'index.
         Utilisé dans le cas d'un mise à jour de l'index.
 
+        Returns:
+            currents_docs (list): La liste des documents actuellement indexés.
+            id (int): Le nouvel id, où va commencer l'indexation.
         """
+        # Si le répertoire "documentsIndex" et le fichier "index.json"
+        # existent déjà, alors on récupère l'état de l'index existant.
         if os.path.isfile(self.index_name) and os.path.isdir(self.keep_path):
             json_index = open(self.index_name, "r", encoding="utf8")
             current_index = json.load(json_index)
@@ -66,7 +71,10 @@ class BiInverIndex:
             self.index = current_index
             current_docs = os.listdir(self.keep_path)
             id = len(current_docs)
+        # Si un des deux éléments est manquant, alors on initialise un nouvel index.
         else:
+            print( colored("Warning", "yellow") + " Un ou plusieurs élements sont manquants. Un nouvel index va être créé. " )
+            # TO DO : delete state
             current_docs = []
             id = 0
         return current_docs, id
@@ -74,9 +82,15 @@ class BiInverIndex:
     def clean_state(self):
         """
         Tente de nettoyer l'environnement d'index
-        Vérifie si le dossier ""documentsIndex" et le fichier "index.json" existent déjà.
+        Vérifie si le dossier "documentsIndex" et le fichier "index.json" existent déjà.
         Une demande de confirmation est demandée avant de les supprimer.
+
+        Returns:
+            True si il n'y avait pas d'état ou que l'état a bien été réinitialisé. False si l'utilisateur a refusé le nettoyage.
+
         """
+
+        # Si "documentsIndex" existe, on demande la confirmation de supprimer son contenu.
         if os.path.exists(self.keep_path) :
             if os.path.isdir(self.keep_path):
                 resp = None
@@ -87,6 +101,7 @@ class BiInverIndex:
                 for file in glob.glob(self.keep_path + "/*"):
                     os.remove(file)
         
+        # Si "index.json" existe, on demande la confirmation de le supprimer
         if os.path.exists(self.index_name) :
             if os.path.isfile(self.index_name):
                 resp = None
@@ -138,7 +153,7 @@ class BiInverIndex:
         lang = detect(text)
 
         tagger = treetaggerwrapper.TreeTagger(TAGLANG=detect(text))
-        tagged_text = self.tag_text(text)
+        tagged_text = tagger.tag_text(text)
 
         for token in tagged_text:
             elements = token.split("\t")

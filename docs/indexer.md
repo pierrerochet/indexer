@@ -141,6 +141,17 @@ Récupère l'état actuel de l'index.
 Utilisé dans le cas d'un mise à jour de l'index.
 
 
+###### Returns
+
+**`currents_docs`** :&ensp;`list`
+:   La liste des documents actuellement indexés.
+
+
+**`id`** :&ensp;`int`
+:   Le nouvel id, où va commencer l'indexation.
+
+
+
     
 ##### Method `clean_state` {#indexer.BiInverIndex.clean_state}
 
@@ -151,8 +162,13 @@ Utilisé dans le cas d'un mise à jour de l'index.
 
 
 Tente de nettoyer l'environnement d'index
-Vérifie si le dossier ""documentsIndex" et le fichier "index.json" existent déjà.
+Vérifie si le dossier "documentsIndex" et le fichier "index.json" existent déjà.
 Une demande de confirmation est demandée avant de les supprimer.
+
+
+###### Returns
+
+True si il n'y avait pas d'état ou que l'état a bien été réinitialisé. False si l'utilisateur a refusé le nettoyage.
 
 
     
