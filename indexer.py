@@ -10,7 +10,6 @@ from langdetect import detect
 from termcolor import colored
 
 
-
 class BiInverIndex:
     """Indexe inversé bilingue français-anglais.
 
@@ -26,21 +25,28 @@ class BiInverIndex:
 
     def __init__(self):
         self.index = {}
+        self.index_document = {}
         self.plain_word_fr = re.compile("ABR|ADJ|NAM|NOM|VER")
         self.plain_word_en = re.compile("JJ|NP|NN|VB")
         self.fr_tagger = treetaggerwrapper.TreeTagger(TAGLANG="fr")
         self.en_tagger = treetaggerwrapper.TreeTagger(TAGLANG="en")
-        self.keep_path = "documentsIndex"
-        self.index_name = "index.json"
+        self.save_folder = "INDEX"
+        self.keep_path = self.save_folder + "/documentsIndex"
+        self.index_name = self.save_folder + "/index.json"
+        self.index_document_name = self.save_folder + "/index_document.json"
 
 
     def dump(self):
         """
-        Sauvegarde l'index dans un fichier json "index.json".
+        Sauvegarde l'index et l'index de document dans des fichiers json 
+        nommés "index.json" et "index_document.json".
 
         """
-        with open(self.index_name, "w", encoding="utf8") as doc:
-            json.dump(self.index, doc, indent=4)
+        with open(self.index_name, "w", encoding="utf8") as index_file:
+            json.dump(self.index, index_file, indent=4)
+        
+        with open(self.index_document_name, "w", encoding="utf8") as index_doc_file:
+            json.dump(self.index_document, index_doc_file, indent=4)
 
 
     def keep_doc(self, file:str):
@@ -52,12 +58,35 @@ class BiInverIndex:
             file (str): Le chemin du fichier à copier.
 
         """
-        if not os.path.isdir(self.keep_path):
-            os.mkdir(self.keep_path)
         shutil.copy(file, self.keep_path)
 
 
     def check_state(self):
+        """
+        Vérifie si un dossier "INDEX" existe déjà et s'il contient bien les élements requis.
+
+        Returns : 
+            True si l'index est en bon état, False si l'index n'a pas été trouvé ou s'il est détérioré.
+        """
+
+        # Vérifie qu'un dossier "INDEX" existe
+        if os.path.isdir(self.save_folder) == False:
+            print( colored("Error", "red"), "Aucun index n'a été trouvé. ", sep=" : ")
+            return False
+
+        # Vérifie que les fichiers "index.json", "index_docoment.json" et que le dossier "documentsIndex" existent
+        state_index_name = os.path.isfile(self.index_name)
+        state_index_document = os.path.isfile(self.index_document_name)
+        state_keep_path = os.path.isdir(self.keep_path)
+
+        if not state_index_document == state_index_name == state_keep_path == True:
+            print( colored("Error", "red"), "Un index a bien été trouvé mais il semble détérioré. ", sep=" : ")
+            return False
+
+        return True
+
+
+    def get_state_index(self):
         """
         Récupère l'état actuel de l'index.
         Utilisé dans le cas d'un mise à jour de l'index.
@@ -66,55 +95,45 @@ class BiInverIndex:
             currents_docs (list): La liste des documents actuellement indexés.
             id (int): Le nouvel id, où va commencer l'indexation.
         """
-        # Si le répertoire "documentsIndex" et le fichier "index.json"
-        # existent déjà, alors on récupère l'état de l'index existant.
-        if os.path.isfile(self.index_name) and os.path.isdir(self.keep_path):
-            json_index = open(self.index_name, "r", encoding="utf8")
-            current_index = json.load(json_index)
-            json_index.close()
-            self.index = current_index
-            current_docs = os.listdir(self.keep_path)
-            id = len(current_docs)
-        # Si un des deux éléments est manquant, alors on initialise un nouvel index.
-        else:
-            print( colored("Warning", "yellow") + " Un ou plusieurs élements sont manquants. Un nouvel index va être créé. " )
-            # TO DO : delete state
-            current_docs = []
-            id = 0
+        json_index = open(self.index_name, "r", encoding="utf8")
+        current_index = json.load(json_index)
+        json_index.close()
+        self.index = current_index
+
+        json_index_document = open(self.index_document_name, "r", encoding="utf8")
+        current_index_document = json.load(json_index_document)
+        json_index_document.close()
+        self.index_document = current_index_document
+
+        current_docs = os.listdir(self.keep_path)
+        id = len(self.index_document)
+
         return current_docs, id
 
-    def clean_state(self):
+
+
+    def clean_state(self) -> bool:
         """
-        Tente de nettoyer l'environnement d'index
-        Vérifie si le dossier "documentsIndex" et le fichier "index.json" existent déjà.
+        Tente de nettoyer l'environnement d'index. 
+        Vérifie si le dossier "INDEX" existe déjà.
         Une demande de confirmation est demandée avant de les supprimer.
 
         Returns:
             True si il n'y avait pas d'état ou que l'état a bien été réinitialisé. False si l'utilisateur a refusé le nettoyage.
 
         """
-
-        # Si "documentsIndex" existe, on demande la confirmation de supprimer son contenu.
-        if os.path.exists(self.keep_path) :
-            if os.path.isdir(self.keep_path):
+        # Si "INDEX" existe, on demande la confirmation de le réinitioaliser
+        if os.path.exists(self.save_folder) :
+            if os.path.isdir(self.save_folder):
                 resp = None
                 while resp != "n" and resp != "y":
-                    resp = input( colored("Warning", "yellow") + " Le dossier 'documentsIndex' existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
+                    resp = input( colored("Warning", "yellow") + f" : Le dossier {self.save_folder} existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
                     resp = resp.lower()
                 if resp == "n" : return False
-                for file in glob.glob(self.keep_path + "/*"):
-                    os.remove(file)
-        
-        # Si "index.json" existe, on demande la confirmation de le supprimer
-        if os.path.exists(self.index_name) :
-            if os.path.isfile(self.index_name):
-                resp = None
-                while resp != "n" and resp != "y":
-                    resp = input( colored("Warning", "yellow") + " Le fichier 'index.json' existe déjà, son contenu sera supprimé. Continuer ? (Y/N) " )
-                    resp = resp.lower()
-                if resp == "n" : return False
-                os.remove(self.index_name)
-
+                shutil.rmtree(self.save_folder)
+    
+        os.mkdir(self.save_folder)
+        os.mkdir(self.keep_path)
         return True
 
 
@@ -168,6 +187,8 @@ class BiInverIndex:
         return freq_term
 
 
+
+
     def add_doc(self, file:str , id:int):
         """
         Ajoute un document à l'index.
@@ -177,7 +198,7 @@ class BiInverIndex:
             id: (int): l'identifiant du document.
         """
         # On récupère le contenu du document
-        text, _ = self.parse_doc(file)
+        text, title = self.parse_doc(file)
         # On récupère la fréquence des termes qu'il contient
         freq_term = self.get_freqs(text)
         # On met à jour l'index
@@ -186,10 +207,13 @@ class BiInverIndex:
             r.update({id:freq})
             self.index[term] = r
         # On sauvegarde le document
+        title = title.split("\n", 1)[0]
+        name = file.split("/")[-1]
+        self.index_document[id] = {"nom":name, "title":title}
         self.keep_doc(file)
 
 
-    def build_index(self, corpus_path:str , update:bool = False):
+    def build_index(self, corpus_path:str , update:bool = False) -> dict:
         """
         Construit l'index inversé à partir 
         d'un réperoire contenant des fichiers xml à indexer.
@@ -208,11 +232,15 @@ class BiInverIndex:
                         Si un index existe déjà il sera supprimé avec accord de l'utilisateur
                         False par défaut.  
         
+        Returns:
+            L'index
         """ 
 
         # Si c'est une mise à jour de l'index on récupère l'état actuel de l'index
+        # Si l'index existant nest détérioré le programme s'arrête
         if update == True :
-            current_docs, id = self.check_state()
+            if self.check_state() == False: return
+            current_docs, id = self.get_state_index()
             print("\n--- Mise à jour de l'index")
 
         # Sinon on vérifie qu'il n'y ait pas de fichier qui entre en conflit
@@ -228,16 +256,16 @@ class BiInverIndex:
         # On récupère le chemin des fichiers à indexer
         files = glob.glob(corpus_path + "/*")
 
-
+        
         for file in files:
 
             # On affiche le nom du fichier en cours de traitement 
             file_name = file.split("/")[-1]
-            print("fichier", file_name, sep=" :: ", end=" :\t")
+            print("fichier", file_name, sep=" :: ", end=" -> ")
 
             # Si le document a déjà été indexé, on l'ignore
             if file_name in current_docs:
-                print( colored("Warning", "yellow"), "Document déjà indexé, il sera ignoré", sep=" :\t")
+                print( colored("Warning", "yellow"), "Document déjà indexé, il sera ignoré", sep=" : ")
             
             # Si le document n'a pas déjà été indexé
             # - on l'ajoute à l'index, 
@@ -253,3 +281,6 @@ class BiInverIndex:
         # on sauvegarde notre index
         self.dump()
         print("Terminé.")
+
+        return self.index
+        

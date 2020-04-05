@@ -52,6 +52,14 @@ Indexe inversé bilingue français-anglais.
 :   Le regex-pattern pour la détection des lemmes anglais.
 
 
+**`fr_tagger`** :&ensp;`TreeTagger`
+:   Le tagger pour le français.
+
+
+**`en_tagger`** :&ensp;`TreeTagger`
+:   Le tagger pour l'anglais.
+
+
 **`keep_path`** :&ensp;`str`
 :   Le nom du répertoire où seront stocké les fichiers indexés.
 
@@ -124,7 +132,14 @@ Les fichiers doivent être sous la forme :
             Dans ce cas l'état de l'index actuel sera récupéré. 
             Sinon un nouvel index est crée.  
             Si un index existe déjà il sera supprimé avec accord de l'utilisateur
-            False par défaut.
+            False par défaut.  
+
+
+
+###### Returns
+
+`L'index`
+:   &nbsp;
 
 
 
@@ -137,19 +152,10 @@ Les fichiers doivent être sous la forme :
 > `def check_state(self)`
 
 
-Récupère l'état actuel de l'index.
-Utilisé dans le cas d'un mise à jour de l'index.
+Vérifie si un dossier "INDEX" existe déjà et s'il contient bien les élements requis.
 
-
-###### Returns
-
-**`currents_docs`** :&ensp;`list`
-:   La liste des documents actuellement indexés.
-
-
-**`id`** :&ensp;`int`
-:   Le nouvel id, où va commencer l'indexation.
-
+Returns : 
+    True si l'index est en bon état, False si l'index n'a pas été trouvé ou s'il est détérioré.
 
 
     
@@ -161,8 +167,8 @@ Utilisé dans le cas d'un mise à jour de l'index.
 > `def clean_state(self)`
 
 
-Tente de nettoyer l'environnement d'index
-Vérifie si le dossier "documentsIndex" et le fichier "index.json" existent déjà.
+Tente de nettoyer l'environnement d'index. 
+Vérifie si le dossier "INDEX" existe déjà.
 Une demande de confirmation est demandée avant de les supprimer.
 
 
@@ -180,7 +186,8 @@ True si il n'y avait pas d'état ou que l'état a bien été réinitialisé. Fal
 > `def dump(self)`
 
 
-Sauvegarde l'index dans un fichier json "index.json".
+Sauvegarde l'index et l'index de document dans des fichiers json 
+nommés "index.json" et "index_document.json".
 
 
     
@@ -199,6 +206,30 @@ Args (str):
 
 Returns (dict):
     Les fréquences des termes trouvés dans le texte.
+
+
+    
+##### Method `get_state_index` {#indexer.BiInverIndex.get_state_index}
+
+
+
+    
+> `def get_state_index(self)`
+
+
+Récupère l'état actuel de l'index.
+Utilisé dans le cas d'un mise à jour de l'index.
+
+
+###### Returns
+
+**`currents_docs`** :&ensp;`list`
+:   La liste des documents actuellement indexés.
+
+
+**`id`** :&ensp;`int`
+:   Le nouvel id, où va commencer l'indexation.
+
 
 
     
