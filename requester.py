@@ -54,7 +54,7 @@ from numpy import dot
 from numpy.linalg import norm
 import math
 
-## Test de plusieurs fonction de pondération :
+## Test de plusieurs fonctions de pondération :
 # fonction sigmoid
 sigmoid = lambda x: 1 / (1 + np.exp(-x))
 # fonction de gauss
@@ -72,8 +72,8 @@ vec_ref = np.ones(len(keywordsPO))
 docs_similarity = {}
 for id, freqs in match:
     v = np.array([freqs.get(word, 0) for word in keywordsPO])
-    # vecteur = sigmoid(np.log(v))
-    # vecteur = gauss(np.log(v))
+    # vecteur = sigmoid( v )
+    # vecteur = gauss( v )
     vecteur = percent( v )
     docs_similarity[id] = score( vecteur, vec_ref )
 
@@ -86,11 +86,11 @@ index_doc_file = "INDEX/index_document.json"
 with open(index_doc_file, "r", encoding="utf8") as file:
     index_doc = json.load(file)
 
-
+match = dict(match) # temporaine, pour faciliter l'affichage
 print(f"%%% {len(result_sorted)} document(s) trouvé(s)")
 for rank, doc in enumerate(result_sorted, 1):
     id_doc, score = doc
-    print(f"{rank}.", score, index_doc[id_doc]["title"], sep="\t")
+    print(f"{rank}.", score, index_doc[id_doc]["title"], match[id_doc], sep="\t")
 
 
 
