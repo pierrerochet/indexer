@@ -14,6 +14,8 @@ import treetaggerwrapper
 from langdetect import detect
 from termcolor import colored
 
+from unidecode import unidecode
+
 
 class BiInverIndex:
     """Indexe inversé bilingue français-anglais.
@@ -152,7 +154,7 @@ class BiInverIndex:
                 _, pos, lemma = elements
                 if re.match(self.__getattribute__("plain_word_" + lang), pos) != None:
                     lemma = lemma.lower()
-                    # lemma = unidecode(lemma)
+                    lemma = unidecode(lemma)
                     freq_term[lemma] = freq_term.get(lemma,0) + 1
         return freq_term
 
@@ -305,4 +307,3 @@ if __name__ == "__main__":
     index = BiInverIndex(args.index)
 
     index.build_index(args.corpus, args.update)
-
