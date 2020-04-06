@@ -1,98 +1,137 @@
+import argparse
 import json
+import math
 
-index_file = "INDEX/index.json"
-with open(index_file, "r", encoding="utf8") as file:
-    index = json.load(file)
-
-
-### 1. On trie les mots-clés
-keywords = ["+avoir","+etre","accord","-gouvernement" ]
-keywordsP = []
-keywordsM = []
-keywordsO = []
-for word in keywords:
-    if word.startswith("+"): keywordsP.append(word[1:])
-    elif word.startswith("-"): keywordsM.append(word[1:])
-    else: keywordsO.append(word)
-
-print("-- Etape 1 : On trie les mots-clés")
-print("Mots à inclure : ", keywordsP)
-print("Mots à exclure : ", keywordsM)
-print("Mots optionnels : ", keywordsO)
-print()
-
-### 2. On récupère les documents contenant tous les mots-clés
-match_docs = {}
-for word in keywordsP + keywordsM + keywordsO:
-    for doc_id, freq in index[word].items():
-        doc = match_docs.setdefault(doc_id, {})
-        doc.update({word:freq})
-
-print("-- Etape 2 : On récupère les documents contenant les mots-clés")
-print(*match_docs.items(), sep="\n")
-print()
-
-
-### 3. On filtre les document en fonction des mots-clés demandés
-def check_doc(doc):
-    terms = doc[1]
-    if all(word in terms for word in keywordsP) == False:
-        return False
-    if any(word in terms for word in keywordsM):
-        return False
-    return True
-
-print("-- Etape 3 : Les documents sont filtrés en fonction des mots-clés")
-match = list(filter(check_doc, match_docs.items()))
-print(*match, sep="\n")
-print()
-
-
-### 4. Calcule du score de pertinence
 import numpy as np
 from numpy import dot
 from numpy.linalg import norm
-import math
-
-## Test de plusieurs fonctions de pondération :
-# fonction sigmoid
-sigmoid = lambda x: 1 / (1 + np.exp(-x))
-# fonction de gauss
-gauss = lambda x: [((1.0 + math.erf(v / math.sqrt(2.0))) / 2.0) for v in x] 
-# fonction percent (meilleure pondération il semblerait)
-percent = lambda x: x / sum(x)
-
-# similarité cosinus
-score = lambda v1, v2 : dot(v1, v2)/(norm(v1)*norm(v2))
-
-# le vecteur de référence pour calculer la similarité
-keywordsPO = keywordsP + keywordsO
-vec_ref = np.ones(len(keywordsPO))
-
-docs_similarity = {}
-for id, freqs in match:
-    v = np.array([freqs.get(word, 0) for word in keywordsPO])
-    # vecteur = sigmoid( v )
-    # vecteur = gauss( v )
-    vecteur = percent( v )
-    docs_similarity[id] = score( vecteur, vec_ref )
 
 
-### Résulat
-print("-- Etape 4 : Les documents sont triés par score de pertience")
-result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=True)
+class Requester:
 
-index_doc_file = "INDEX/index_document.json"
-with open(index_doc_file, "r", encoding="utf8") as file:
-    index_doc = json.load(file)
+    def __init__(self, index):
+        self.index_folder = index
 
-match = dict(match) # temporaine, pour faciliter l'affichage
-print(f"%%% {len(result_sorted)} document(s) trouvé(s)")
-for rank, doc in enumerate(result_sorted, 1):
-    id_doc, score = doc
-    print(f"{rank}.", score, index_doc[id_doc]["title"], match[id_doc], sep="\t")
+        self.index_name = index + "/index.json"
+        self.index = json.load(open(self.index_name, "r", encoding="utf8"))
+
+        self.index_document_name = index + "/index_document.json"
+        self.index_document = json.load(open(self.index_document_name, "r", encoding="utf8"))
+
+        # similarité cosinus
+        self.score_func = lambda v1, v2 : dot(v1, v2)/(norm(v1)*norm(v2))
+        
+        ## Test de plusieurs fonctions de pondération :
+        # fonction sigmoid
+        # self.pond = lambda x: 1 / (1 + np.exp(-x))
+        # fonction de gauss
+        # self.pond = lambda x: [((1.0 + math.erf(v / math.sqrt(2.0))) / 2.0) for v in x] 
+        # fonction percent (meilleure pondération il semblerait)
+        self.pond = lambda x: x / sum(x)
+
+
+    def request(self, keywords:list) -> list:
+        print("-- Etape 1 : On trie les mots-clés")
+        keywords = self.filter_keywords(keywords)
+        print("Mots à inclure : ", self.keywordsP)
+        print("Mots à exclure : ", self.keywordsM)
+        print("Mots optionnels : ", self.keywordsO)
+        print()
+        
+        print("-- Etape 2 : On récupère les documents contenant les mots-clés")
+        docs = self.get_documents(keywords)
+        print(*docs.items(), sep="\n")
+        print()
+
+        print("-- Etape 3 : Les documents sont filtrés en fonction des mots-clés")
+        docs = self.filter_documents(docs)
+        print(*docs.items(), sep="\n")
+        print()
+
+        print("-- Etape 4 : Les documents sont triés par score de pertience")
+        result = self.sorted_documents(docs)
+        return result
+
+
+    def filter_keywords(self, keywords:list) -> (list, list, list):
+        
+        keywordsP = []
+        keywordsM = []
+        keywordsO = []
+        for word in keywords:
+            if word.startswith("+"): keywordsP.append(word[1:])
+            elif word.startswith("-"): keywordsM.append(word[1:])
+            else: keywordsO.append(word)
+
+        self.keywordsP = keywordsP
+        self.keywordsM = keywordsM
+        self.keywordsO = keywordsO
+        keywords = keywordsP + keywordsM + keywordsO
+        return keywords
 
 
 
+    def get_documents(self, keywords:list) -> dict:
+
+        match_docs = {}
+        for word in keywords:
+            for doc_id, freq in self.index[word].items():
+                doc = match_docs.setdefault(doc_id, {})
+                doc.update({word:freq})
+
+        return match_docs
 
 
+    def filter_documents(self, docs:dict) -> dict:
+        
+        def check_doc(doc):
+            terms = doc[1]
+            if all(word in terms for word in self.keywordsP) == False:
+                return False
+            if any(word in terms for word in self.keywordsM):
+                return False
+            return True
+
+        match = dict(filter(check_doc, docs.items()))
+        return match
+
+
+    def sorted_documents(self, docs:dict) -> list:
+
+        keywordsPO = self.keywordsP + self.keywordsM
+        vec_ref = np.ones(len(keywordsPO))
+        docs_similarity = {}
+
+        for id, freqs in docs.items():
+            v = np.array([freqs.get(word, 0) for word in keywordsPO])
+            vecteur = self.pond( v )
+            docs_similarity[id] = self.score_func( vecteur, vec_ref )
+
+        result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=True)
+
+        result = []
+        for doc in result_sorted:
+            id_doc, score = doc
+            result.append((score, self.index_document[id_doc]["title"], docs[id_doc]))
+
+        return result
+
+
+if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser()
+   
+    parser.add_argument("keywords", type=str, help="les mots-clés de la requête")
+    parser.add_argument("-i", "--index", type=str, default="./INDEX", help="emplacement de l'index")
+   
+    args = parser.parse_args()
+    index = args.index
+    keywords = args.keywords.split(" ")
+
+    requester = Requester(index)
+    result = requester.request(keywords)
+
+    print(f"%%% {len(result)} document(s) trouvé(s)")
+    for rank, doc in enumerate(result, 1):
+        score, title, terms = doc
+        print(f"{rank}.", score, title, terms, sep="\t")
