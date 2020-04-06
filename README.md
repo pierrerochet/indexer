@@ -24,7 +24,7 @@ fichier :: 2001-01-DRWESKI-14685.txt -> OK
 `
 python3 indexer.py -u corpus/complémentaires/
 `
-```
+```console
 --- Mise à jour de l'index
 fichier :: 103687-article.txt -> OK
 fichier :: 2003-04-LAURENS-10112.txt -> OK
@@ -32,15 +32,15 @@ fichier :: 2003-04-LAURENS-10112.txt -> OK
 
 ## Argument obligatoire
 
-argument| description
--|-
+argument | description
+:-|:-
 corpus | le chemin du dossier contenant le corpus à indexer
 
 
 ## Arguments optionnels
 
-arguments optionels | description
--|-
+argument | description
+:-|:-
 -i, --index INDEX | emplacement de l'index, cherche à l'emplacement actuel par défaut
 -u, --update | indique s'il faut effectuer une mise à jour de l'index. l'option --index pointra alors vers un index existant
 -h, --help | affiche l'aide
@@ -52,14 +52,14 @@ arguments optionels | description
 python3 requester.py [-h] [-i INDEX] [-u] keywords
 `
 
-3 opérateurs possibles sur les termes
+
+3 opérateurs possibles sur les termes :
 - \+ (plus) : le terme doit être présent
 - \- (moins) : le terme doit être absent
 - ø  (aucun opérateur) : le terme peut être absent ou présent
 
 ## Exemple
 
-`
 python3 requester.py "+politique +social -president"
 `
 ```console
@@ -68,16 +68,17 @@ python3 requester.py "+politique +social -president"
 3.	0.6144762981140549	LES IMPASSES D'UN MODÈLE	{'politique': 15, 'social': 1}
 ```
 
+
 ## Argument obligatoire
 
-argument| description
--|-
+argument | description
+:-|:-
 keywords | les mots-clés de la requête 
 
 
 ## Arguments optionnels
 
-arguments optionels | description
--|-
+argument | description
+:-|:-
 -i, --index INDEX | emplacement de l'index
 -h, --help | affiche l'aide
