@@ -24,7 +24,7 @@ fichier :: 2001-01-DRWESKI-14685.txt -> OK
 `
 python3 indexer.py -u corpus/complémentaires/
 `
-```
+```console
 --- Mise à jour de l'index
 fichier :: 103687-article.txt -> OK
 fichier :: 2003-04-LAURENS-10112.txt -> OK
