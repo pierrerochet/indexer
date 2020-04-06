@@ -32,15 +32,15 @@ fichier :: 2003-04-LAURENS-10112.txt -> OK
 
 ## Argument obligatoire
 
-argument| description
--|-
+argument | description
+:-|:-
 corpus | le chemin du dossier contenant le corpus à indexer
 
 
 ## Arguments optionnels
 
-arguments optionels | description
--|-
+argument | description
+:-|:-
 -i, --index INDEX | emplacement de l'index, cherche à l'emplacement actuel par défaut
 -u, --update | indique s'il faut effectuer une mise à jour de l'index. l'option --index pointra alors vers un index existant
 -h, --help | affiche l'aide
@@ -68,16 +68,17 @@ python3 requester.py "+politique +social -president"
 3.	0.6144762981140549	LES IMPASSES D'UN MODÈLE	{'politique': 15, 'social': 1}
 ```
 
+
 ## Argument obligatoire
 
-argument| description
--|-
+argument | description
+:-|:-
 keywords | les mots-clés de la requête 
 
 
 ## Arguments optionnels
 
-arguments optionels | description
--|-
+argument | description
+:-|:-
 -i, --index INDEX | emplacement de l'index
 -h, --help | affiche l'aide
