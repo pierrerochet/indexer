@@ -9,6 +9,8 @@ import treetaggerwrapper
 from langdetect import detect
 from termcolor import colored
 
+from unidecode import unidecode
+
 
 class BiInverIndex:
     """Indexe inversé bilingue français-anglais.
@@ -183,6 +185,8 @@ class BiInverIndex:
             if len(elements) == 3:
                 _, pos, lemma = elements
                 if re.match(self.__getattribute__("plain_word_" + lang), pos) != None:
+                    lemma = lemma.lower()
+                    lemma = unidecode(lemma)
                     freq_term[lemma] = freq_term.get(lemma,0) + 1
         return freq_term
 
@@ -203,9 +207,8 @@ class BiInverIndex:
         freq_term = self.get_freqs(text)
         # On met à jour l'index
         for term, freq in freq_term.items():
-            r = self.index.get(term, {})
+            r = self.index.setdefault(term, {})
             r.update({id:freq})
-            self.index[term] = r
         # On sauvegarde le document
         title = title.split("\n", 1)[0]
         name = file.split("/")[-1]
@@ -283,4 +286,3 @@ class BiInverIndex:
         print("Terminé.")
 
         return self.index
-        
