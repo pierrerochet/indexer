@@ -52,14 +52,14 @@ arguments optionels | description
 python3 requester.py [-h] [-i INDEX] [-u] keywords
 `
 
-3 opérateurs possibles sur les termes
+
+3 opérateurs possibles sur les termes :
 - \+ (plus) : le terme doit être présent
 - \- (moins) : le terme doit être absent
 - ø  (aucun opérateur) : le terme peut être absent ou présent
 
 ## Exemple
 
-`
 python3 requester.py "+politique +social -president"
 `
 ```console
