@@ -131,7 +131,7 @@ class BiInverIndex:
         return text, title
 
 
-    def get_freqs(self, text:str) -> dict:
+    def get_stats(self, text:str) -> (dict, int):
         """
         Récupère la fréquence des termes contenus dans un texte.
 
@@ -148,7 +148,9 @@ class BiInverIndex:
         tagged_text = self.__getattribute__(lang + "_tagger").tag_text(text)
         # On récupère seleument les fréquences des tokens ayant un lemma 
         # qui match avec le pattern de la langue détectée
+        size = 0
         for token in tagged_text:
+            size += 1
             elements = token.split("\t")
             if len(elements) == 3:
                 _, pos, lemma = elements
@@ -156,7 +158,7 @@ class BiInverIndex:
                     lemma = lemma.lower()
                     lemma = unidecode(lemma)
                     freq_term[lemma] = freq_term.get(lemma,0) + 1
-        return freq_term
+        return freq_term, size
 
 
     def add_doc(self, file:str , id:int):
@@ -170,7 +172,7 @@ class BiInverIndex:
         # On récupère le contenu du document
         text, title = self.parse_doc(file)
         # On récupère la fréquence des termes qu'il contient
-        freq_term = self.get_freqs(text)
+        freq_term, size = self.get_stats(text)
         # On met à jour l'index
         for term, freq in freq_term.items():
             r = self.index.setdefault(term, {})
@@ -178,7 +180,7 @@ class BiInverIndex:
         # On sauvegarde le document
         title = title.split("\n", 1)[0]
         name = file.split("/")[-1]
-        self.index_document[id] = {"nom":name, "title":title}
+        self.index_document[id] = {"nom":name, "title":title, "taille":size}
         self.keep_doc(file)
 
 
