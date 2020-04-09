@@ -14,45 +14,67 @@ class Requester:
     
     Args: 
         index (str): le chemin de l'index sur lequel effectuer les requêtes
+        sim (str): le méthode utilisée pour le calcul de similarité
 
     Attributes:
         index_folder (str): le chemin de l'index
         index (dict): l'index recupéré du fichier index.json 
         index_document (dict): l'index des documents récupéré du fichier index_document.json
         document_size (int): le nombre de document
-        score_func (function): la fonction utilisée pour le calcule de similarité
-        pond (function): la fonction utilisée pour la pondération
+        sim (function): la fonction utilisée pour le calcule de similarité
+        tf (function): fonction pour calcul du tf
+        idf (function): fonction pour calcul de l'idf
+        tfidf (function): fonction pour calcul du tfidf
+        _pond (function): la fonction utilisée pour la pondération_
     """
 
-    def __init__(self, index):
+    def __init__(self, index, sim = "euc"):
+        # chemin de l'index
         self.index_folder = index
 
+        # index des termes
         index_name = index + "/index.json"
         self.index = json.load(open(index_name, "r", encoding="utf8"))
+        
+        # index des documents
         index_document_name = index + "/index_document.json"
         self.index_document = json.load(open(index_document_name, "r", encoding="utf8"))
 
+        # nombre total de document ( = taille de l'index des documents )
         self.document_size = len(self.index_document)
-
 
         # Pour la calcul de similarité
         # self.sim = lambda v1, v2 : dot(v1, v2)/(norm(v1)*norm(v2))
-        # self.sim = cosine
-        self.sim = euclidean
+        if sim == "cos": self.sim = cosine
+        if sim == "euc": self.sim = euclidean
+
+        # Pour le calcul du tf-idf
+        # | ----
+
+        # formule du tf :
+        # - si fréquence > 0 : fréquence / nb de mot * 100 ( x 100 pour un effectuer un changement d'echelle )
+        # - si fréquence = 0 : 0
+        self.tf = lambda x, size : np.array([v if v > 0 else 0 for v in x ]) / size * 100
         
-        ## Test de plusieurs fonctions de pondération :
+        def idf(kw_PO):
+            result = np.zeros(len(kw_PO))
+            for i, kw in enumerate(kw_PO):
+                # formule de l'idf : log2( nb de doc / nb de doc contenant le mot )
+                n_doc = len(self.index[kw])
+                result[i] = np.log2(self.document_size/n_doc)
+            return result
+        self.idf = idf
+
+        self.tfidf = lambda x, size, kw_PO : self.tf(x, size) * self.idf(kw_PO)
+        # ---- |
+
+        ## Test de plusieurs fonctions de pondération ( non concluant ):
         # fonction sigmoid
         # self.pond = lambda x: 1 / (1 + np.exp(-x))
         # fonction de gauss
         # self.pond = lambda x: [((1.0 + math.erf(v / math.sqrt(2.0))) / 2.0) for v in x] 
         
-        # Pour le calcul du tf-idf
-        self.tf = lambda x, size : np.array([v if v > 0 else 0 for v in x ]) / size
-        self.idf = lambda x : np.array([(np.log2(self.document_size/v)) if v > 0 else 0 for v in x ])
-        self.tfidf = lambda x, size : self.tf(x, size) * self.idf(x)
-
-
-
+        
     def request(self, keywords:list) -> list:
         """
         Lance la requête.
@@ -71,7 +93,7 @@ class Requester:
         keywords, keywords_gr = self.filter_keywords(keywords)
 
         # -- Etape 2 : On récupère les documents contenant les mots-clés
-        docs = self.get_documents(keywords)
+        docs = self.get_documents(keywords_gr)
 
         # -- Etape 3 : Les documents sont filtrés en fonction des mots-clés
         docs = self.filter_documents(docs, keywords_gr)
@@ -103,12 +125,12 @@ class Requester:
 
 
 
-    def get_documents(self, keywords:list) -> dict:
+    def get_documents(self, keywords_gr:dict) -> dict:
         """
         Extrait les documents qui contiennent les mots-clés de l'index.
 
         Args:
-            keywords (list): la liste des mots clées
+            keywords (list): le dictionnaire des mots-clés trié par opérateur
 
         Returns:
             extrac_docs (dict): un dictionnaire contenant 
@@ -117,7 +139,7 @@ class Requester:
                             les valeurs sont les fréquences associées
         """
         extract_docs = {}
-        for word in keywords:
+        for word in keywords_gr["P"] + keywords_gr["O"]:
             for doc_id, freq in self.index[word].items():
                 doc = extract_docs.setdefault(doc_id, {})
                 doc.update({word:freq})
@@ -167,11 +189,17 @@ class Requester:
         keywordsPO = keywords["P"] + keywords["O"]
         docs_similarity = {}
 
-        # s'il y un qu'un mot-clé on se base sur les fréquences relative
+        # s'il y a qu'un mot-clé on se base sur les fréquences relatives du mot
         if len(keywordsPO) == 1:
             for id, freqs in docs.items():
+
+                # la taille du document
                 size = self.index_document[id]["taille"]
+
+                # la fréquence relative
                 freq = freqs[keywordsPO[0]] / size
+
+                # on sauvegarde le score
                 docs_similarity[id] = freq
         
         # sinon on effectue un tf-idf + calcul de similarité
@@ -183,15 +211,15 @@ class Requester:
 
                 # le vecteur de la requête
                 vec_ref = np.ones(len(keywordsPO))
-
                 # le vecteur tf-idf de la référence
-                tfidf_ref = self.tfidf(vec_ref, size)
+                tfidf_ref = self.tfidf(vec_ref, size, keywordsPO)
 
                 # le vecteur du document
                 vecteur_doc = np.array([freqs.get(word, 0) for word in keywordsPO])
+                
                 # le vecteur tf-idf du document
-                tfidf_doc = self.tfidf(vecteur_doc, size)
-
+                tfidf_doc = self.tfidf(vecteur_doc, size, keywordsPO)
+                # print(vecteur_doc, tfidf_doc)
                 # calcule du score de similarité entre les deux vecteurs
                 score = self.sim(tfidf_doc, tfidf_ref)
 
@@ -200,8 +228,10 @@ class Requester:
 
 
         # on ordonne les documents en fonction des scores précédemments calculés
-        result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=True )
-
+        # -- on oriente le sens de l'odre suivant la fonction de similarité 
+        if self.sim.__name__ == "cosine" and len(keywordsPO) != 1 : reverse = False
+        else : reverse = True
+        result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
 
         # on ajoute des informations supplémentaires à nos résultats
         result = []
@@ -213,21 +243,20 @@ class Requester:
 
 
 
-
-
-
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
    
     parser.add_argument("keywords", type=str, help="les mots-clés de la requête")
     parser.add_argument("-i", "--index", type=str, default="./INDEX", help="emplacement de l'index")
-   
+    parser.add_argument("-s", "--similarity", type=str, default="cos", help="type de similarité à utiliser")
+
     args = parser.parse_args()
     index = args.index
     keywords = args.keywords.split(" ")
+    sim = args.similarity
 
-    requester = Requester(index)
+    requester = Requester(index, sim=sim)
     result = requester.request(keywords)
 
     print(f"%%% {len(result)} document(s) trouvé(s)")
