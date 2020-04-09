@@ -31,6 +31,10 @@ class Requester:
 
 
     def request(self, keywords:list) -> list:
+        """
+        Affiche les quatre étapes du pipeline
+        """
+        
         print("-- Etape 1 : On trie les mots-clés")
         keywords = self.filter_keywords(keywords)
         print("Mots à inclure : ", self.keywordsP)
@@ -54,6 +58,12 @@ class Requester:
 
 
     def filter_keywords(self, keywords:list) -> (list, list, list):
+        """
+        Filtre les mots clés en fonction de trois différents opérateurs
+            + (plus) : le terme doit être présent
+            - (moins) : le terme doit être absent
+            ø (aucun opérateur) : le terme peut être absent ou présent
+        """
         
         keywordsP = []
         keywordsM = []
@@ -72,7 +82,10 @@ class Requester:
 
 
     def get_documents(self, keywords:list) -> dict:
-
+        """
+        Match les documents avec leurs IDs
+        """
+        
         match_docs = {}
         for word in keywords:
             for doc_id, freq in self.index[word].items():
@@ -83,6 +96,15 @@ class Requester:
 
 
     def filter_documents(self, docs:dict) -> dict:
+        """
+        Filtre les documents selon la présence de trois genres de mots
+        
+        Returns:
+            False si tous les mots ne sont pas présents dans la liste keywordsP
+                  ou s'il existe un mot qui est présent dans la liste keywordsM
+                  
+            True
+        """
         
         def check_doc(doc):
             terms = doc[1]
@@ -97,6 +119,9 @@ class Requester:
 
 
     def sorted_documents(self, docs:dict) -> list:
+        """
+        Trie les documents selon leur pertinence calculée par la similarité cosinus
+        """
 
         keywordsPO = self.keywordsP + self.keywordsM
         vec_ref = np.ones(len(keywordsPO))
