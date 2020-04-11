@@ -49,7 +49,7 @@ argument | description
 
 ## Usage
 `
-python3 requester.py [-h] [-i INDEX] [-u] keywords
+python3 requester.py [-h] [-i INDEX] [-s {cos,euc}] keywords
 `
 
 
@@ -81,4 +81,5 @@ keywords | les mots-clés de la requête
 argument | description
 :-|:-
 -i, --index INDEX | emplacement de l'index
+-s {cos, euc}, --similarity {euc, euc} | type de similarité, euclidienne par défaut
 -h, --help | affiche l'aide
