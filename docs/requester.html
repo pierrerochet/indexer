@@ -255,7 +255,7 @@ class Requester:
 
         # on ordonne les documents en fonction des scores précédemments calculés
         # -- on oriente le sens de l&#39;odre suivant la fonction de similarité 
-        if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) != 1 : reverse = False
+        if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) &gt; 1 : reverse = False
         else : reverse = True
         result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
 
@@ -271,11 +271,11 @@ class Requester:
 
 if __name__ == &#34;__main__&#34;:
     
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=&#34;Requête l&#39;index créé par l&#39;indexeur&#34;)
    
     parser.add_argument(&#34;keywords&#34;, type=str, help=&#34;les mots-clés de la requête&#34;)
     parser.add_argument(&#34;-i&#34;, &#34;--index&#34;, type=str, default=&#34;./INDEX&#34;, help=&#34;emplacement de l&#39;index&#34;)
-    parser.add_argument(&#34;-s&#34;, &#34;--similarity&#34;, type=str, default=&#34;enc&#34;, help=&#34;type de similarité à utiliser: &#39;enc&#39; pour euclidienne, &#39;cos&#39; pour cosinus. euclienne par défaut&#34;)
+    parser.add_argument(&#34;-s&#34;, &#34;--similarity&#34;, type=str, default=&#34;euc&#34;, choices=[&#34;cos&#34;,&#34;euc&#34;], help=&#34;type de similarité à utiliser: &#39;enc&#39; pour euclidienne, &#39;cos&#39; pour cosinus. euclienne par défaut&#34;)
 
     args = parser.parse_args()
     index = args.index
@@ -556,7 +556,7 @@ if __name__ == &#34;__main__&#34;:
 
         # on ordonne les documents en fonction des scores précédemments calculés
         # -- on oriente le sens de l&#39;odre suivant la fonction de similarité 
-        if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) != 1 : reverse = False
+        if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) &gt; 1 : reverse = False
         else : reverse = True
         result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
 
@@ -833,7 +833,7 @@ puis les ordonne.</p>
 
     # on ordonne les documents en fonction des scores précédemments calculés
     # -- on oriente le sens de l&#39;odre suivant la fonction de similarité 
-    if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) != 1 : reverse = False
+    if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) &gt; 1 : reverse = False
     else : reverse = True
     result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
 

@@ -68,7 +68,7 @@ class BiInverIndex:
     
     Args:
         index_path (str): le chemin de l&#39;index.
-        
+
     &#34;&#34;&#34;
 
     def __init__(self, index_path=&#34;/INDEX&#34;):
@@ -350,11 +350,11 @@ class BiInverIndex:
 
 if __name__ == &#34;__main__&#34;:
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=&#34;Indexe les documents xml d&#39;un répertoire&#34;)
     parser.add_argument(&#34;corpus&#34;, type=str, help=&#34;le chemin du dossier contenant le corpus à indexer&#34;)
 
     parser.add_argument(&#34;-i&#34;, &#34;--index&#34;, type=str, default=&#34;./INDEX&#34;, help=&#34;le nom de l&#39;index&#34;)
-    parser.add_argument(&#34;-u&#34;, &#34;--update&#34;, action=&#34;store_true&#34;, help=&#34;indique s&#39;il faut effectuer une mise à jour de l&#39;index. l&#39;option --index pointra alors vers un index existant&#34;)
+    parser.add_argument(&#34;-u&#34;, &#34;--update&#34;, action=&#34;store_true&#34;, help=&#34;indique s&#39;il faut effectuer une mise à jour de l&#39;index. l&#39;option --index pointera alors vers un index existant&#34;)
     
     args = parser.parse_args()
 
@@ -443,7 +443,7 @@ if __name__ == &#34;__main__&#34;:
     
     Args:
         index_path (str): le chemin de l&#39;index.
-        
+
     &#34;&#34;&#34;
 
     def __init__(self, index_path=&#34;/INDEX&#34;):
