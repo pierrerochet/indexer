@@ -1,5 +1,7 @@
 # Indexer
 
+`pip install -r requirements.txt`
+
 ## Usage
 `
 python3 indexer.py [-h] [-i INDEX] [-u] corpus
