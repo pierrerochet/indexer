@@ -85,3 +85,7 @@ argument | description
 -i, --index INDEX | emplacement de l'index
 -s {cos, euc}, --similarity {euc, euc} | type de similarité, euclidienne par défaut
 -h, --help | affiche l'aide
+
+
+### Remarque
+La documentation technique du code est disponible aux formats md, html et pdf dans le dossier docs du projet.
