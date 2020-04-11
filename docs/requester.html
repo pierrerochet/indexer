@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.5" />
+<title>requester API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>requester</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import argparse
+import json
+import math
+
+import numpy as np
+from numpy import dot
+from numpy.linalg import norm
+
+from scipy.spatial.distance import cosine, euclidean
+
+
+class Requester:
+    &#34;&#34;&#34;Le requêteur qui utilise l&#39;index créé par l&#39;indexeur.
+
+    Attributes:
+        index_folder (str): Le chemin de l&#39;index.
+        index (dict): L&#39;index recupéré du fichier index.json.
+        index_document (dict): L&#39;index des documents récupérés du fichier index_document.json.
+        document_size (int): Le nombre de document.
+        sim (function): La fonction utilisée pour le calcule de similarité.
+        tf (function): Fonction pour calcul du tf.
+        idf (function): Fonction pour calcul de l&#39;idf.
+        tfidf (function): Fonction pour calcul du tfidf.
+
+    Args:
+        index (str): Le chemin de l&#39;index sur lequel effectuer les requêtes.
+        sim (str): La méthode utilisée pour le calcul de similarité.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, index:str, sim:str=&#34;euc&#34;):
+        # chemin de l&#39;index
+        self.index_folder = index
+
+        # index des termes
+        index_name = index + &#34;/index.json&#34;
+        self.index = json.load(open(index_name, &#34;r&#34;, encoding=&#34;utf8&#34;))
+        
+        # index des documents
+        index_document_name = index + &#34;/index_document.json&#34;
+        self.index_document = json.load(open(index_document_name, &#34;r&#34;, encoding=&#34;utf8&#34;))
+
+        # nombre total de document ( = taille de l&#39;index des documents )
+        self.document_size = len(self.index_document)
+
+        # Pour la calcul de similarité
+        # self.sim = lambda v1, v2 : dot(v1, v2)/(norm(v1)*norm(v2))
+        if sim == &#34;cos&#34;: self.sim = cosine
+        if sim == &#34;euc&#34;: self.sim = euclidean
+
+        # Pour le calcul du tf-idf
+        # | ----
+
+        # formule du tf :
+        # - si fréquence &gt; 0 : fréquence / nb de mot * 100 ( x 100 pour un effectuer un changement d&#39;echelle )
+        # - si fréquence = 0 : 0
+        self.tf = lambda x, size : np.array([v if v &gt; 0 else 0 for v in x ]) / size * 100
+        
+        def idf(kw_PO):
+            result = np.zeros(len(kw_PO))
+            for i, kw in enumerate(kw_PO):
+                # formule de l&#39;idf : log2( nb de doc / nb de doc contenant le mot )
+                n_doc = len(self.index[kw])
+                result[i] = np.log2(self.document_size/n_doc)
+            return result
+        self.idf = idf
+
+        self.tfidf = lambda x, size, kw_PO : self.tf(x, size) * self.idf(kw_PO)
+        # ---- |
+
+        ## Test de plusieurs fonctions de pondération ( non concluant ):
+        # fonction sigmoid
+        # self.pond = lambda x: 1 / (1 + np.exp(-x))
+        # fonction de gauss
+        # self.pond = lambda x: [((1.0 + math.erf(v / math.sqrt(2.0))) / 2.0) for v in x] 
+        
+        
+    def request(self, keywords:list) -&gt; list:
+        &#34;&#34;&#34;
+        Lance la requête.
+
+        Args:
+            keywords (list): La liste de mots clés
+            Trois opérateurs peuvent être utilisés avec les mots-clés :
+            - + (plus) : le terme doit être présent
+            - - (moins) : le terme doit être absent
+            - ø (aucun opérateur) : le terme peut être absent ou présent
+        
+        Returns:
+            result (list): Le résultat de la requête.
+        &#34;&#34;&#34;
+        # -- Etape 1 : On trie les mots-clés
+        keywords, keywords_gr = self.filter_keywords(keywords)
+
+        # -- Etape 2 : On récupère les documents contenant les mots-clés
+        docs = self.get_documents(keywords_gr)
+
+        # -- Etape 3 : Les documents sont filtrés en fonction des mots-clés
+        docs = self.filter_documents(docs, keywords_gr)
+
+        # -- Etape 4 : Les documents sont triés par score de pertience
+        result = self.sorted_documents(docs, keywords_gr)
+        return result
+
+
+    def filter_keywords(self, keywords:list) -&gt; (list, dict):
+        &#34;&#34;&#34;
+        Répartit les mots-clés de la requête en sous-listes en fonction des opérateurs
+
+        Args:
+            keywords (list): la liste des mots-clés
+
+        Returns:
+            keywords_clean (list): la liste des mots-clés sans les opérateurs
+            keywords_gr (dict): un dictionnaire avec les mots-clés triés par opérateur
+        &#34;&#34;&#34;
+        keywords_gr = {&#34;P&#34;:[], &#34;A&#34;:[], &#34;O&#34;:[]}
+        for word in keywords:
+            if word.startswith(&#34;+&#34;): keywords_gr[&#34;P&#34;].append(word[1:])
+            elif word.startswith(&#34;-&#34;): keywords_gr[&#34;A&#34;].append(word[1:])
+            else: keywords_gr[&#34;O&#34;].append(word)
+        
+        keywords_clean = [kw for lkw in keywords_gr.values() for kw in lkw]
+        return keywords_clean, keywords_gr
+
+
+
+    def get_documents(self, keywords_gr:dict) -&gt; dict:
+        &#34;&#34;&#34;
+        Extrait les documents qui contiennent les mots-clés de l&#39;index.
+
+        Args:
+            keywords (list): le dictionnaire des mots-clés trié par opérateur
+
+        Returns:
+            extrac_docs (dict): un dictionnaire contenant 
+                            les documents extraits,
+                            les clés sont les ids des documents, 
+                            les valeurs sont les fréquences associées
+        &#34;&#34;&#34;
+        extract_docs = {}
+        for word in keywords_gr[&#34;P&#34;] + keywords_gr[&#34;O&#34;]:
+            for doc_id, freq in self.index[word].items():
+                doc = extract_docs.setdefault(doc_id, {})
+                doc.update({word:freq})
+
+        return extract_docs
+
+
+    def filter_documents(self, docs:dict, keywords:dict) -&gt; dict:
+        &#34;&#34;&#34;
+        Les documents sont filtrés en fonction des opérateurs.
+
+        Args:
+            docs (dict): le dictionnaire de documents ids - fréquences
+            keywords (dict): les mots-clés trés par opérateurs
+
+        Returns:
+            match_docs (dict): un nouveau dictionnaire contenant seulements
+                        les documents respectants les règles des opérateurs 
+
+        &#34;&#34;&#34;
+
+        def check_doc(doc) -&gt; dict:
+            terms = doc[1]
+            if all(word in terms for word in keywords[&#34;P&#34;]) == False:
+                return False
+            if any(word in terms for word in keywords[&#34;A&#34;]):
+                return False
+            return True
+
+        match_docs = dict(filter(check_doc, docs.items()))
+        return match_docs
+
+
+    def sorted_documents(self, docs:dict, keywords:dict) -&gt; list:
+        &#34;&#34;&#34;
+        Calcule le score de pertinence des documents, 
+        puis les ordonne.
+
+        Args:
+            docs (dict): le dictionnaire des documents ids - fréquences
+            keywords (dict): les mots-clés trés par opérateurs
+
+        Returns:
+            result (list): la listes des documents ordonnées en fonction du score de pertinence
+        &#34;&#34;&#34;
+
+        keywordsPO = keywords[&#34;P&#34;] + keywords[&#34;O&#34;]
+        docs_similarity = {}
+
+        # s&#39;il y a qu&#39;un mot-clé on se base sur les fréquences relatives du mot
+        if len(keywordsPO) == 1:
+            for id, freqs in docs.items():
+
+                # la taille du document
+                size = self.index_document[id][&#34;taille&#34;]
+
+                # la fréquence relative
+                freq = freqs[keywordsPO[0]] / size
+
+                # on sauvegarde le score
+                docs_similarity[id] = freq
+        
+        # sinon on effectue un tf-idf + calcul de similarité
+        else:
+            for id, freqs in docs.items():
+            
+                # la taille du document
+                size = self.index_document[id][&#34;taille&#34;]
+
+                # le vecteur de la requête
+                vec_ref = np.ones(len(keywordsPO))
+                # le vecteur tf-idf de la référence
+                tfidf_ref = self.tfidf(vec_ref, size, keywordsPO)
+
+                # le vecteur du document
+                vecteur_doc = np.array([freqs.get(word, 0) for word in keywordsPO])
+                
+                # le vecteur tf-idf du document
+                tfidf_doc = self.tfidf(vecteur_doc, size, keywordsPO)
+                # print(vecteur_doc, tfidf_doc)
+                # calcule du score de similarité entre les deux vecteurs
+                score = self.sim(tfidf_doc, tfidf_ref)
+
+                # sauvegarde de la valeur 
+                docs_similarity[id] = score
+
+
+        # on ordonne les documents en fonction des scores précédemments calculés
+        # -- on oriente le sens de l&#39;odre suivant la fonction de similarité 
+        if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) != 1 : reverse = False
+        else : reverse = True
+        result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
+
+        # on ajoute des informations supplémentaires à nos résultats
+        result = []
+        for doc in result_sorted:
+            id_doc, score = doc
+            title, _, size = self.index_document[id_doc].values()
+            result.append((score, title, docs[id_doc], size))
+        return result
+
+
+
+if __name__ == &#34;__main__&#34;:
+    
+    parser = argparse.ArgumentParser()
+   
+    parser.add_argument(&#34;keywords&#34;, type=str, help=&#34;les mots-clés de la requête&#34;)
+    parser.add_argument(&#34;-i&#34;, &#34;--index&#34;, type=str, default=&#34;./INDEX&#34;, help=&#34;emplacement de l&#39;index&#34;)
+    parser.add_argument(&#34;-s&#34;, &#34;--similarity&#34;, type=str, default=&#34;enc&#34;, help=&#34;type de similarité à utiliser: &#39;enc&#39; pour euclidienne, &#39;cos&#39; pour cosinus. euclienne par défaut&#34;)
+
+    args = parser.parse_args()
+    index = args.index
+    keywords = args.keywords.split(&#34; &#34;)
+    sim = args.similarity
+
+    requester = Requester(index, sim=sim)
+    result = requester.request(keywords)
+
+    print(f&#34;%%% {len(result)} document(s) trouvé(s)&#34;)
+    for rank, doc in enumerate(result, 1):
+        score, title, terms, size = doc
+        print(f&#34;{rank}.&#34;, score, title, terms, size, sep=&#34;\t&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="requester.Requester"><code class="flex name class">
+<span>class <span class="ident">Requester</span></span>
+<span>(</span><span>index, sim='euc')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Le requêteur qui utilise l'index créé par l'indexeur.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>index_folder</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le chemin de l'index.</dd>
+<dt><strong><code>index</code></strong> :&ensp;<code>dict</code></dt>
+<dd>L'index recupéré du fichier index.json.</dd>
+<dt><strong><code>index_document</code></strong> :&ensp;<code>dict</code></dt>
+<dd>L'index des documents récupérés du fichier index_document.json.</dd>
+<dt><strong><code>document_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>Le nombre de document.</dd>
+<dt><strong><code>sim</code></strong> :&ensp;<code>function</code></dt>
+<dd>La fonction utilisée pour le calcule de similarité.</dd>
+<dt><strong><code>tf</code></strong> :&ensp;<code>function</code></dt>
+<dd>Fonction pour calcul du tf.</dd>
+<dt><strong><code>idf</code></strong> :&ensp;<code>function</code></dt>
+<dd>Fonction pour calcul de l'idf.</dd>
+<dt><strong><code>tfidf</code></strong> :&ensp;<code>function</code></dt>
+<dd>Fonction pour calcul du tfidf.</dd>
+</dl>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>index</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le chemin de l'index sur lequel effectuer les requêtes.</dd>
+<dt><strong><code>sim</code></strong> :&ensp;<code>str</code></dt>
+<dd>La méthode utilisée pour le calcul de similarité.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Requester:
+    &#34;&#34;&#34;Le requêteur qui utilise l&#39;index créé par l&#39;indexeur.
+
+    Attributes:
+        index_folder (str): Le chemin de l&#39;index.
+        index (dict): L&#39;index recupéré du fichier index.json.
+        index_document (dict): L&#39;index des documents récupérés du fichier index_document.json.
+        document_size (int): Le nombre de document.
+        sim (function): La fonction utilisée pour le calcule de similarité.
+        tf (function): Fonction pour calcul du tf.
+        idf (function): Fonction pour calcul de l&#39;idf.
+        tfidf (function): Fonction pour calcul du tfidf.
+
+    Args:
+        index (str): Le chemin de l&#39;index sur lequel effectuer les requêtes.
+        sim (str): La méthode utilisée pour le calcul de similarité.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, index:str, sim:str=&#34;euc&#34;):
+        # chemin de l&#39;index
+        self.index_folder = index
+
+        # index des termes
+        index_name = index + &#34;/index.json&#34;
+        self.index = json.load(open(index_name, &#34;r&#34;, encoding=&#34;utf8&#34;))
+        
+        # index des documents
+        index_document_name = index + &#34;/index_document.json&#34;
+        self.index_document = json.load(open(index_document_name, &#34;r&#34;, encoding=&#34;utf8&#34;))
+
+        # nombre total de document ( = taille de l&#39;index des documents )
+        self.document_size = len(self.index_document)
+
+        # Pour la calcul de similarité
+        # self.sim = lambda v1, v2 : dot(v1, v2)/(norm(v1)*norm(v2))
+        if sim == &#34;cos&#34;: self.sim = cosine
+        if sim == &#34;euc&#34;: self.sim = euclidean
+
+        # Pour le calcul du tf-idf
+        # | ----
+
+        # formule du tf :
+        # - si fréquence &gt; 0 : fréquence / nb de mot * 100 ( x 100 pour un effectuer un changement d&#39;echelle )
+        # - si fréquence = 0 : 0
+        self.tf = lambda x, size : np.array([v if v &gt; 0 else 0 for v in x ]) / size * 100
+        
+        def idf(kw_PO):
+            result = np.zeros(len(kw_PO))
+            for i, kw in enumerate(kw_PO):
+                # formule de l&#39;idf : log2( nb de doc / nb de doc contenant le mot )
+                n_doc = len(self.index[kw])
+                result[i] = np.log2(self.document_size/n_doc)
+            return result
+        self.idf = idf
+
+        self.tfidf = lambda x, size, kw_PO : self.tf(x, size) * self.idf(kw_PO)
+        # ---- |
+
+        ## Test de plusieurs fonctions de pondération ( non concluant ):
+        # fonction sigmoid
+        # self.pond = lambda x: 1 / (1 + np.exp(-x))
+        # fonction de gauss
+        # self.pond = lambda x: [((1.0 + math.erf(v / math.sqrt(2.0))) / 2.0) for v in x] 
+        
+        
+    def request(self, keywords:list) -&gt; list:
+        &#34;&#34;&#34;
+        Lance la requête.
+
+        Args:
+            keywords (list): La liste de mots clés
+            Trois opérateurs peuvent être utilisés avec les mots-clés :
+            - + (plus) : le terme doit être présent
+            - - (moins) : le terme doit être absent
+            - ø (aucun opérateur) : le terme peut être absent ou présent
+        
+        Returns:
+            result (list): Le résultat de la requête.
+        &#34;&#34;&#34;
+        # -- Etape 1 : On trie les mots-clés
+        keywords, keywords_gr = self.filter_keywords(keywords)
+
+        # -- Etape 2 : On récupère les documents contenant les mots-clés
+        docs = self.get_documents(keywords_gr)
+
+        # -- Etape 3 : Les documents sont filtrés en fonction des mots-clés
+        docs = self.filter_documents(docs, keywords_gr)
+
+        # -- Etape 4 : Les documents sont triés par score de pertience
+        result = self.sorted_documents(docs, keywords_gr)
+        return result
+
+
+    def filter_keywords(self, keywords:list) -&gt; (list, dict):
+        &#34;&#34;&#34;
+        Répartit les mots-clés de la requête en sous-listes en fonction des opérateurs
+
+        Args:
+            keywords (list): la liste des mots-clés
+
+        Returns:
+            keywords_clean (list): la liste des mots-clés sans les opérateurs
+            keywords_gr (dict): un dictionnaire avec les mots-clés triés par opérateur
+        &#34;&#34;&#34;
+        keywords_gr = {&#34;P&#34;:[], &#34;A&#34;:[], &#34;O&#34;:[]}
+        for word in keywords:
+            if word.startswith(&#34;+&#34;): keywords_gr[&#34;P&#34;].append(word[1:])
+            elif word.startswith(&#34;-&#34;): keywords_gr[&#34;A&#34;].append(word[1:])
+            else: keywords_gr[&#34;O&#34;].append(word)
+        
+        keywords_clean = [kw for lkw in keywords_gr.values() for kw in lkw]
+        return keywords_clean, keywords_gr
+
+
+
+    def get_documents(self, keywords_gr:dict) -&gt; dict:
+        &#34;&#34;&#34;
+        Extrait les documents qui contiennent les mots-clés de l&#39;index.
+
+        Args:
+            keywords (list): le dictionnaire des mots-clés trié par opérateur
+
+        Returns:
+            extrac_docs (dict): un dictionnaire contenant 
+                            les documents extraits,
+                            les clés sont les ids des documents, 
+                            les valeurs sont les fréquences associées
+        &#34;&#34;&#34;
+        extract_docs = {}
+        for word in keywords_gr[&#34;P&#34;] + keywords_gr[&#34;O&#34;]:
+            for doc_id, freq in self.index[word].items():
+                doc = extract_docs.setdefault(doc_id, {})
+                doc.update({word:freq})
+
+        return extract_docs
+
+
+    def filter_documents(self, docs:dict, keywords:dict) -&gt; dict:
+        &#34;&#34;&#34;
+        Les documents sont filtrés en fonction des opérateurs.
+
+        Args:
+            docs (dict): le dictionnaire de documents ids - fréquences
+            keywords (dict): les mots-clés trés par opérateurs
+
+        Returns:
+            match_docs (dict): un nouveau dictionnaire contenant seulements
+                        les documents respectants les règles des opérateurs 
+
+        &#34;&#34;&#34;
+
+        def check_doc(doc) -&gt; dict:
+            terms = doc[1]
+            if all(word in terms for word in keywords[&#34;P&#34;]) == False:
+                return False
+            if any(word in terms for word in keywords[&#34;A&#34;]):
+                return False
+            return True
+
+        match_docs = dict(filter(check_doc, docs.items()))
+        return match_docs
+
+
+    def sorted_documents(self, docs:dict, keywords:dict) -&gt; list:
+        &#34;&#34;&#34;
+        Calcule le score de pertinence des documents, 
+        puis les ordonne.
+
+        Args:
+            docs (dict): le dictionnaire des documents ids - fréquences
+            keywords (dict): les mots-clés trés par opérateurs
+
+        Returns:
+            result (list): la listes des documents ordonnées en fonction du score de pertinence
+        &#34;&#34;&#34;
+
+        keywordsPO = keywords[&#34;P&#34;] + keywords[&#34;O&#34;]
+        docs_similarity = {}
+
+        # s&#39;il y a qu&#39;un mot-clé on se base sur les fréquences relatives du mot
+        if len(keywordsPO) == 1:
+            for id, freqs in docs.items():
+
+                # la taille du document
+                size = self.index_document[id][&#34;taille&#34;]
+
+                # la fréquence relative
+                freq = freqs[keywordsPO[0]] / size
+
+                # on sauvegarde le score
+                docs_similarity[id] = freq
+        
+        # sinon on effectue un tf-idf + calcul de similarité
+        else:
+            for id, freqs in docs.items():
+            
+                # la taille du document
+                size = self.index_document[id][&#34;taille&#34;]
+
+                # le vecteur de la requête
+                vec_ref = np.ones(len(keywordsPO))
+                # le vecteur tf-idf de la référence
+                tfidf_ref = self.tfidf(vec_ref, size, keywordsPO)
+
+                # le vecteur du document
+                vecteur_doc = np.array([freqs.get(word, 0) for word in keywordsPO])
+                
+                # le vecteur tf-idf du document
+                tfidf_doc = self.tfidf(vecteur_doc, size, keywordsPO)
+                # print(vecteur_doc, tfidf_doc)
+                # calcule du score de similarité entre les deux vecteurs
+                score = self.sim(tfidf_doc, tfidf_ref)
+
+                # sauvegarde de la valeur 
+                docs_similarity[id] = score
+
+
+        # on ordonne les documents en fonction des scores précédemments calculés
+        # -- on oriente le sens de l&#39;odre suivant la fonction de similarité 
+        if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) != 1 : reverse = False
+        else : reverse = True
+        result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
+
+        # on ajoute des informations supplémentaires à nos résultats
+        result = []
+        for doc in result_sorted:
+            id_doc, score = doc
+            title, _, size = self.index_document[id_doc].values()
+            result.append((score, title, docs[id_doc], size))
+        return result</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="requester.Requester.filter_documents"><code class="name flex">
+<span>def <span class="ident">filter_documents</span></span>(<span>self, docs, keywords)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Les documents sont filtrés en fonction des opérateurs.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>docs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>le dictionnaire de documents ids - fréquences</dd>
+<dt><strong><code>keywords</code></strong> :&ensp;<code>dict</code></dt>
+<dd>les mots-clés trés par opérateurs</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>match_docs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>un nouveau dictionnaire contenant seulements
+les documents respectants les règles des opérateurs</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def filter_documents(self, docs:dict, keywords:dict) -&gt; dict:
+    &#34;&#34;&#34;
+    Les documents sont filtrés en fonction des opérateurs.
+
+    Args:
+        docs (dict): le dictionnaire de documents ids - fréquences
+        keywords (dict): les mots-clés trés par opérateurs
+
+    Returns:
+        match_docs (dict): un nouveau dictionnaire contenant seulements
+                    les documents respectants les règles des opérateurs 
+
+    &#34;&#34;&#34;
+
+    def check_doc(doc) -&gt; dict:
+        terms = doc[1]
+        if all(word in terms for word in keywords[&#34;P&#34;]) == False:
+            return False
+        if any(word in terms for word in keywords[&#34;A&#34;]):
+            return False
+        return True
+
+    match_docs = dict(filter(check_doc, docs.items()))
+    return match_docs</code></pre>
+</details>
+</dd>
+<dt id="requester.Requester.filter_keywords"><code class="name flex">
+<span>def <span class="ident">filter_keywords</span></span>(<span>self, keywords)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Répartit les mots-clés de la requête en sous-listes en fonction des opérateurs</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>keywords</code></strong> :&ensp;<code>list</code></dt>
+<dd>la liste des mots-clés</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>keywords_clean</code></strong> :&ensp;<code>list</code></dt>
+<dd>la liste des mots-clés sans les opérateurs</dd>
+<dt><strong><code>keywords_gr</code></strong> :&ensp;<code>dict</code></dt>
+<dd>un dictionnaire avec les mots-clés triés par opérateur</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def filter_keywords(self, keywords:list) -&gt; (list, dict):
+    &#34;&#34;&#34;
+    Répartit les mots-clés de la requête en sous-listes en fonction des opérateurs
+
+    Args:
+        keywords (list): la liste des mots-clés
+
+    Returns:
+        keywords_clean (list): la liste des mots-clés sans les opérateurs
+        keywords_gr (dict): un dictionnaire avec les mots-clés triés par opérateur
+    &#34;&#34;&#34;
+    keywords_gr = {&#34;P&#34;:[], &#34;A&#34;:[], &#34;O&#34;:[]}
+    for word in keywords:
+        if word.startswith(&#34;+&#34;): keywords_gr[&#34;P&#34;].append(word[1:])
+        elif word.startswith(&#34;-&#34;): keywords_gr[&#34;A&#34;].append(word[1:])
+        else: keywords_gr[&#34;O&#34;].append(word)
+    
+    keywords_clean = [kw for lkw in keywords_gr.values() for kw in lkw]
+    return keywords_clean, keywords_gr</code></pre>
+</details>
+</dd>
+<dt id="requester.Requester.get_documents"><code class="name flex">
+<span>def <span class="ident">get_documents</span></span>(<span>self, keywords_gr)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Extrait les documents qui contiennent les mots-clés de l'index.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>keywords</code></strong> :&ensp;<code>list</code></dt>
+<dd>le dictionnaire des mots-clés trié par opérateur</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>extrac_docs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>un dictionnaire contenant
+les documents extraits,
+les clés sont les ids des documents,
+les valeurs sont les fréquences associées</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_documents(self, keywords_gr:dict) -&gt; dict:
+    &#34;&#34;&#34;
+    Extrait les documents qui contiennent les mots-clés de l&#39;index.
+
+    Args:
+        keywords (list): le dictionnaire des mots-clés trié par opérateur
+
+    Returns:
+        extrac_docs (dict): un dictionnaire contenant 
+                        les documents extraits,
+                        les clés sont les ids des documents, 
+                        les valeurs sont les fréquences associées
+    &#34;&#34;&#34;
+    extract_docs = {}
+    for word in keywords_gr[&#34;P&#34;] + keywords_gr[&#34;O&#34;]:
+        for doc_id, freq in self.index[word].items():
+            doc = extract_docs.setdefault(doc_id, {})
+            doc.update({word:freq})
+
+    return extract_docs</code></pre>
+</details>
+</dd>
+<dt id="requester.Requester.request"><code class="name flex">
+<span>def <span class="ident">request</span></span>(<span>self, keywords)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Lance la requête.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>keywords</code></strong> :&ensp;<code>list</code></dt>
+<dd>La liste de mots clés</dd>
+</dl>
+<p>Trois opérateurs peuvent être utilisés avec les mots-clés :
+- + (plus) : le terme doit être présent
+- - (moins) : le terme doit être absent
+- ø (aucun opérateur) : le terme peut être absent ou présent</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>result</code></strong> :&ensp;<code>list</code></dt>
+<dd>Le résultat de la requête.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def request(self, keywords:list) -&gt; list:
+    &#34;&#34;&#34;
+    Lance la requête.
+
+    Args:
+        keywords (list): La liste de mots clés
+        Trois opérateurs peuvent être utilisés avec les mots-clés :
+        - + (plus) : le terme doit être présent
+        - - (moins) : le terme doit être absent
+        - ø (aucun opérateur) : le terme peut être absent ou présent
+    
+    Returns:
+        result (list): Le résultat de la requête.
+    &#34;&#34;&#34;
+    # -- Etape 1 : On trie les mots-clés
+    keywords, keywords_gr = self.filter_keywords(keywords)
+
+    # -- Etape 2 : On récupère les documents contenant les mots-clés
+    docs = self.get_documents(keywords_gr)
+
+    # -- Etape 3 : Les documents sont filtrés en fonction des mots-clés
+    docs = self.filter_documents(docs, keywords_gr)
+
+    # -- Etape 4 : Les documents sont triés par score de pertience
+    result = self.sorted_documents(docs, keywords_gr)
+    return result</code></pre>
+</details>
+</dd>
+<dt id="requester.Requester.sorted_documents"><code class="name flex">
+<span>def <span class="ident">sorted_documents</span></span>(<span>self, docs, keywords)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calcule le score de pertinence des documents,
+puis les ordonne.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>docs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>le dictionnaire des documents ids - fréquences</dd>
+<dt><strong><code>keywords</code></strong> :&ensp;<code>dict</code></dt>
+<dd>les mots-clés trés par opérateurs</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>result</code></strong> :&ensp;<code>list</code></dt>
+<dd>la listes des documents ordonnées en fonction du score de pertinence</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sorted_documents(self, docs:dict, keywords:dict) -&gt; list:
+    &#34;&#34;&#34;
+    Calcule le score de pertinence des documents, 
+    puis les ordonne.
+
+    Args:
+        docs (dict): le dictionnaire des documents ids - fréquences
+        keywords (dict): les mots-clés trés par opérateurs
+
+    Returns:
+        result (list): la listes des documents ordonnées en fonction du score de pertinence
+    &#34;&#34;&#34;
+
+    keywordsPO = keywords[&#34;P&#34;] + keywords[&#34;O&#34;]
+    docs_similarity = {}
+
+    # s&#39;il y a qu&#39;un mot-clé on se base sur les fréquences relatives du mot
+    if len(keywordsPO) == 1:
+        for id, freqs in docs.items():
+
+            # la taille du document
+            size = self.index_document[id][&#34;taille&#34;]
+
+            # la fréquence relative
+            freq = freqs[keywordsPO[0]] / size
+
+            # on sauvegarde le score
+            docs_similarity[id] = freq
+    
+    # sinon on effectue un tf-idf + calcul de similarité
+    else:
+        for id, freqs in docs.items():
+        
+            # la taille du document
+            size = self.index_document[id][&#34;taille&#34;]
+
+            # le vecteur de la requête
+            vec_ref = np.ones(len(keywordsPO))
+            # le vecteur tf-idf de la référence
+            tfidf_ref = self.tfidf(vec_ref, size, keywordsPO)
+
+            # le vecteur du document
+            vecteur_doc = np.array([freqs.get(word, 0) for word in keywordsPO])
+            
+            # le vecteur tf-idf du document
+            tfidf_doc = self.tfidf(vecteur_doc, size, keywordsPO)
+            # print(vecteur_doc, tfidf_doc)
+            # calcule du score de similarité entre les deux vecteurs
+            score = self.sim(tfidf_doc, tfidf_ref)
+
+            # sauvegarde de la valeur 
+            docs_similarity[id] = score
+
+
+    # on ordonne les documents en fonction des scores précédemments calculés
+    # -- on oriente le sens de l&#39;odre suivant la fonction de similarité 
+    if self.sim.__name__ == &#34;cosine&#34; and len(keywordsPO) != 1 : reverse = False
+    else : reverse = True
+    result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
+
+    # on ajoute des informations supplémentaires à nos résultats
+    result = []
+    for doc in result_sorted:
+        id_doc, score = doc
+        title, _, size = self.index_document[id_doc].values()
+        result.append((score, title, docs[id_doc], size))
+    return result</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="requester.Requester" href="#requester.Requester">Requester</a></code></h4>
+<ul class="">
+<li><code><a title="requester.Requester.filter_documents" href="#requester.Requester.filter_documents">filter_documents</a></code></li>
+<li><code><a title="requester.Requester.filter_keywords" href="#requester.Requester.filter_keywords">filter_keywords</a></code></li>
+<li><code><a title="requester.Requester.get_documents" href="#requester.Requester.get_documents">get_documents</a></code></li>
+<li><code><a title="requester.Requester.request" href="#requester.Requester.request">request</a></code></li>
+<li><code><a title="requester.Requester.sorted_documents" href="#requester.Requester.sorted_documents">sorted_documents</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
