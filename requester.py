@@ -229,7 +229,7 @@ class Requester:
 
         # on ordonne les documents en fonction des scores précédemments calculés
         # -- on oriente le sens de l'odre suivant la fonction de similarité 
-        if self.sim.__name__ == "cosine" and len(keywordsPO) != 1 : reverse = False
+        if self.sim.__name__ == "cosine" and len(keywordsPO) > 1 : reverse = False
         else : reverse = True
         result_sorted = sorted(docs_similarity.items(), key=lambda x: x[1], reverse=reverse )
 
@@ -245,11 +245,11 @@ class Requester:
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Requête l'index créé par l'indexeur")
    
     parser.add_argument("keywords", type=str, help="les mots-clés de la requête")
     parser.add_argument("-i", "--index", type=str, default="./INDEX", help="emplacement de l'index")
-    parser.add_argument("-s", "--similarity", type=str, default="enc", help="type de similarité à utiliser: 'enc' pour euclidienne, 'cos' pour cosinus. euclienne par défaut")
+    parser.add_argument("-s", "--similarity", type=str, default="euc", choices=["cos","euc"], help="type de similarité à utiliser: 'enc' pour euclidienne, 'cos' pour cosinus. euclienne par défaut")
 
     args = parser.parse_args()
     index = args.index
