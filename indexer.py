@@ -21,22 +21,45 @@ class BiInverIndex:
     """Indexe inversé bilingue français-anglais.
 
     Attributes:
-        index (dict): L'index de la forme {'term':{'id_doc1':freq, 'id_doc2':freq, 'id_doc3':freq, ... }.
+        index (dict): L'index de la forme 
+        ```python
+        {'term1':{'id_doc1':freq, 'id_doc2':freq, 'id_doc3':freq, ... }, ... }
+        ```
+        index_document (dict): L'index des documents de la forme 
+        ```python
+        {'id_doc1':{'nom':'nom_doc1', 'titre':'titre_doc1', 'taille':500}, ... }.
+        ```
         plain_word_fr (Pattern): Le regex-pattern pour la détection des lemmes français.
         plain_word_en (Pattern): Le regex-pattern pour la détection des lemmes anglais.
+        
         fr_tagger (TreeTagger): Le tagger pour le français.
         en_tagger (TreeTagger): Le tagger pour l'anglais.
-        keep_path (str): Le nom du répertoire où seront stocké les fichiers indexés.
-        index_name (str): le nom du fichier json pour sauvegarder l'index.
+        
+        save_folder (str): Emplacement où l'index est sauvegardé.
+        keep_path (str): Le chemin du répertoire où seront stocké les fichiers indexés.
+        index_name (str): Le nom du fichier json pour sauvegarder l'index.
+        index_document_name (str): Le nom du fichier json pour sauvegarder l'index des documents.
+    
+    Args:
+        index_path (str): le chemin de l'index.
+        
     """
 
     def __init__(self, index_path="/INDEX"):
+        # les données de l'index
         self.index = {}
         self.index_document = {}
+
+        # Les patterns utilisés pour détecter le vocabulaire
+        # dans notre cas, ils seront utilisés sur les lemmes
         self.plain_word_fr = re.compile("ABR|ADJ|NAM|NOM|VER")
         self.plain_word_en = re.compile("JJ|NP|NN|VB")
+
+        # Les taggers
         self.fr_tagger = treetaggerwrapper.TreeTagger(TAGLANG="fr")
         self.en_tagger = treetaggerwrapper.TreeTagger(TAGLANG="en")
+
+        # Les chemins des fichiers qui composent notre index
         self.save_folder = index_path
         self.keep_path = self.save_folder + "/documentsIndex"
         self.index_name = self.save_folder + "/index.json"
@@ -55,7 +78,7 @@ class BiInverIndex:
         shutil.copy(file, self.keep_path)
 
 
-    def check_state(self):
+    def check_state(self) -> bool:
         """
         Vérifie si un dossier "INDEX" existe déjà et s'il contient bien les élements requis.
 
@@ -73,10 +96,10 @@ class BiInverIndex:
         state_index_document = os.path.isfile(self.index_document_name)
         state_keep_path = os.path.isdir(self.keep_path)
 
+        # Si un des composants est manquant, False est retourné
         if not state_index_document == state_index_name == state_keep_path == True:
             print( colored("Error", "red"), "Un index a bien été trouvé mais il semble détérioré. ", sep=" : ")
             return False
-
 
         return True
 
@@ -91,8 +114,7 @@ class BiInverIndex:
             True si il n'y avait pas d'état ou que l'état a bien été réinitialisé. False si l'utilisateur a refusé le nettoyage.
 
         """
-        # Si "INDEX" existe, on demande la confirmation de le réinitioaliser
-    
+        # Si l'index existe, on demande la confirmation de le réinitioaliser
         if os.path.exists(self.save_folder) :
             if os.path.isdir(self.save_folder):
                 resp = None
@@ -135,18 +157,19 @@ class BiInverIndex:
         """
         Récupère la fréquence des termes contenus dans un texte.
 
-        Args (str):
-            Le textes à utiliser.
+        Args:
+            text (str): Le textes à utiliser.
         
-        Returns (dict):
-            Les fréquences des termes trouvés dans le texte.
+        Returns :
+            freq_term (dict): Les fréquences des termes trouvés dans le texte.
+            size (int): Le nombre total de token dans le texte. 
         """
         freq_term = {}
         # Détection de la langue
         lang = detect(text)
         # Tagging du texte
         tagged_text = self.__getattribute__(lang + "_tagger").tag_text(text)
-        # On récupère seleument les fréquences des tokens ayant un lemma 
+        # On récupère seleument les fréquences des tokens ayant un lemme 
         # qui match avec le pattern de la langue détectée
         size = 0
         for token in tagged_text:
@@ -167,7 +190,7 @@ class BiInverIndex:
 
         Args:
             file (str): Le chemin du document à ajouter.
-            id: (int): l'identifiant du document.
+            id (int): l'identifiant du document.
         """
         # On récupère le contenu du document
         text, title = self.parse_doc(file)
@@ -193,17 +216,20 @@ class BiInverIndex:
             currents_docs (list): La liste des documents actuellement indexés.
             id (int): Le nouvel id, où va commencer l'indexation.
         """
-
+        
+        # récupération de l'index
         json_index = open(self.index_name, "r", encoding="utf8")
         current_index = json.load(json_index)
         json_index.close()
         self.index = current_index
 
+        # récuếration de l'index des documents
         json_index_document = open(self.index_document_name, "r", encoding="utf8")
         current_index_document = json.load(json_index_document)
         json_index_document.close()
         self.index_document = current_index_document
 
+        # récupération des documents déjà indexés et du prochain id disponible
         current_docs = os.listdir(self.keep_path)
         id = len(self.index_document)
 
@@ -230,7 +256,7 @@ class BiInverIndex:
                         False par défaut.  
         
         Returns:
-            L'index
+            index (dict): L'index nouvellement crée.
         """ 
 
         # Si c'est une mise à jour de l'index on récupère l'état actuel de l'index
@@ -247,8 +273,9 @@ class BiInverIndex:
         # notre liste de documents déjà traités et l'id 
         else :
             if self.clean_state() == False : return
-            print("\n--- Construction de l'index")
             current_docs, id = [], 0
+            print("\n--- Construction de l'index")
+
 
         # On récupère le chemin des fichiers à indexer
         files = glob.glob(corpus_path + "/*")
@@ -286,7 +313,6 @@ class BiInverIndex:
         """
         Sauvegarde l'index et l'index de document dans des fichiers json 
         nommés "index.json" et "index_document.json".
-
         """
         with open(self.index_name, "w", encoding="utf8") as index_file:
             json.dump(self.index, index_file, indent=4)

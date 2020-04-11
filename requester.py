@@ -11,24 +11,24 @@ from scipy.spatial.distance import cosine, euclidean
 
 class Requester:
     """Le requêteur qui utilise l'index créé par l'indexeur.
-    
-    Args: 
-        index (str): le chemin de l'index sur lequel effectuer les requêtes
-        sim (str): le méthode utilisée pour le calcul de similarité
 
     Attributes:
-        index_folder (str): le chemin de l'index
-        index (dict): l'index recupéré du fichier index.json 
-        index_document (dict): l'index des documents récupéré du fichier index_document.json
-        document_size (int): le nombre de document
-        sim (function): la fonction utilisée pour le calcule de similarité
-        tf (function): fonction pour calcul du tf
-        idf (function): fonction pour calcul de l'idf
-        tfidf (function): fonction pour calcul du tfidf
-        _pond (function): la fonction utilisée pour la pondération_
+        index_folder (str): Le chemin de l'index.
+        index (dict): L'index recupéré du fichier index.json.
+        index_document (dict): L'index des documents récupérés du fichier index_document.json.
+        document_size (int): Le nombre de document.
+        sim (function): La fonction utilisée pour le calcule de similarité.
+        tf (function): Fonction pour calcul du tf.
+        idf (function): Fonction pour calcul de l'idf.
+        tfidf (function): Fonction pour calcul du tfidf.
+
+    Args:
+        index (str): Le chemin de l'index sur lequel effectuer les requêtes.
+        sim (str): La méthode utilisée pour le calcul de similarité.
+
     """
 
-    def __init__(self, index, sim = "euc"):
+    def __init__(self, index:str, sim:str="euc"):
         # chemin de l'index
         self.index_folder = index
 
@@ -80,14 +80,14 @@ class Requester:
         Lance la requête.
 
         Args:
-            keywords (list): la liste de mots clés
+            keywords (list): La liste de mots clés
             Trois opérateurs peuvent être utilisés avec les mots-clés :
-            + (plus) : le terme doit être présent
-            - (moins) : le terme doit être absent
-            ø (aucun opérateur) : le terme peut être absent ou présent
+            - + (plus) : le terme doit être présent
+            - - (moins) : le terme doit être absent
+            - ø (aucun opérateur) : le terme peut être absent ou présent
         
-        Return:
-            result (list): les résultats de la reqûete
+        Returns:
+            result (list): Le résultat de la requête.
         """
         # -- Etape 1 : On trie les mots-clés
         keywords, keywords_gr = self.filter_keywords(keywords)
@@ -183,7 +183,7 @@ class Requester:
             keywords (dict): les mots-clés trés par opérateurs
 
         Returns:
-            result (list) : la listes des documents ordonnées en fonction du score de pertinence
+            result (list): la listes des documents ordonnées en fonction du score de pertinence
         """
 
         keywordsPO = keywords["P"] + keywords["O"]
@@ -249,7 +249,7 @@ if __name__ == "__main__":
    
     parser.add_argument("keywords", type=str, help="les mots-clés de la requête")
     parser.add_argument("-i", "--index", type=str, default="./INDEX", help="emplacement de l'index")
-    parser.add_argument("-s", "--similarity", type=str, default="cos", help="type de similarité à utiliser")
+    parser.add_argument("-s", "--similarity", type=str, default="enc", help="type de similarité à utiliser: 'enc' pour euclidienne, 'cos' pour cosinus. euclienne par défaut")
 
     args = parser.parse_args()
     index = args.index
