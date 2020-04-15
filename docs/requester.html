@@ -187,7 +187,7 @@ class Requester:
 
         &#34;&#34;&#34;
 
-        def check_doc(doc) -&gt; dict:
+        def check_doc(doc):
             terms = doc[1]
             if all(word in terms for word in keywords[&#34;P&#34;]) == False:
                 return False
@@ -488,7 +488,7 @@ if __name__ == &#34;__main__&#34;:
 
         &#34;&#34;&#34;
 
-        def check_doc(doc) -&gt; dict:
+        def check_doc(doc):
             terms = doc[1]
             if all(word in terms for word in keywords[&#34;P&#34;]) == False:
                 return False
@@ -606,7 +606,7 @@ les documents respectants les règles des opérateurs</dd>
 
     &#34;&#34;&#34;
 
-    def check_doc(doc) -&gt; dict:
+    def check_doc(doc):
         terms = doc[1]
         if all(word in terms for word in keywords[&#34;P&#34;]) == False:
             return False

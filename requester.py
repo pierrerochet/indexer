@@ -161,7 +161,7 @@ class Requester:
 
         """
 
-        def check_doc(doc) -> dict:
+        def check_doc(doc):
             terms = doc[1]
             if all(word in terms for word in keywords["P"]) == False:
                 return False

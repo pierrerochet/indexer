@@ -1,6 +1,6 @@
 ---
 description: |
-    API documentation for modules: indexer, requester.
+    API documentation for modules: requester, indexer.
 
 lang: en
 
@@ -11,6 +11,240 @@ papersize: a4
 linkcolor: blue
 links-as-notes: true
 ...
+
+
+    
+# Module `requester` {#requester}
+
+
+
+
+
+
+
+
+    
+## Classes
+
+
+    
+### Class `Requester` {#requester.Requester}
+
+
+
+> `class Requester(index, sim='euc')`
+
+
+Le requêteur qui utilise l'index créé par l'indexeur.
+
+
+#### Attributes
+
+**`index_folder`** :&ensp;`str`
+:   Le chemin de l'index.
+
+
+**`index`** :&ensp;`dict`
+:   L'index recupéré du fichier index.json.
+
+
+**`index_document`** :&ensp;`dict`
+:   L'index des documents récupérés du fichier index_document.json.
+
+
+**`document_size`** :&ensp;`int`
+:   Le nombre de document.
+
+
+**`sim`** :&ensp;`function`
+:   La fonction utilisée pour le calcule de similarité.
+
+
+**`tf`** :&ensp;`function`
+:   Fonction pour calcul du tf.
+
+
+**`idf`** :&ensp;`function`
+:   Fonction pour calcul de l'idf.
+
+
+**`tfidf`** :&ensp;`function`
+:   Fonction pour calcul du tfidf.
+
+
+
+#### Args
+
+**`index`** :&ensp;`str`
+:   Le chemin de l'index sur lequel effectuer les requêtes.
+
+
+**`sim`** :&ensp;`str`
+:   La méthode utilisée pour le calcul de similarité.
+
+
+
+
+
+
+
+
+
+    
+#### Methods
+
+
+    
+##### Method `filter_documents` {#requester.Requester.filter_documents}
+
+
+
+    
+> `def filter_documents(self, docs, keywords)`
+
+
+Les documents sont filtrés en fonction des opérateurs.
+
+
+###### Args
+
+**`docs`** :&ensp;`dict`
+:   le dictionnaire de documents ids - fréquences
+
+
+**`keywords`** :&ensp;`dict`
+:   les mots-clés trés par opérateurs
+
+
+
+###### Returns
+
+**`match_docs`** :&ensp;`dict`
+:   un nouveau dictionnaire contenant seulements
+            les documents respectants les règles des opérateurs
+
+
+
+    
+##### Method `filter_keywords` {#requester.Requester.filter_keywords}
+
+
+
+    
+> `def filter_keywords(self, keywords)`
+
+
+Répartit les mots-clés de la requête en sous-listes en fonction des opérateurs
+
+
+###### Args
+
+**`keywords`** :&ensp;`list`
+:   la liste des mots-clés
+
+
+
+###### Returns
+
+**`keywords_clean`** :&ensp;`list`
+:   la liste des mots-clés sans les opérateurs
+
+
+**`keywords_gr`** :&ensp;`dict`
+:   un dictionnaire avec les mots-clés triés par opérateur
+
+
+
+    
+##### Method `get_documents` {#requester.Requester.get_documents}
+
+
+
+    
+> `def get_documents(self, keywords_gr)`
+
+
+Extrait les documents qui contiennent les mots-clés de l'index.
+
+
+###### Args
+
+**`keywords`** :&ensp;`list`
+:   le dictionnaire des mots-clés trié par opérateur
+
+
+
+###### Returns
+
+**`extrac_docs`** :&ensp;`dict`
+:   un dictionnaire contenant 
+                les documents extraits,
+                les clés sont les ids des documents, 
+                les valeurs sont les fréquences associées
+
+
+
+    
+##### Method `request` {#requester.Requester.request}
+
+
+
+    
+> `def request(self, keywords)`
+
+
+Lance la requête.
+
+
+###### Args
+
+**`keywords`** :&ensp;`list`
+:   La liste de mots clés
+
+
+Trois opérateurs peuvent être utilisés avec les mots-clés :
+- + (plus) : le terme doit être présent
+- - (moins) : le terme doit être absent
+- ø (aucun opérateur) : le terme peut être absent ou présent
+
+###### Returns
+
+**`result`** :&ensp;`list`
+:   Le résultat de la requête.
+
+
+
+    
+##### Method `sorted_documents` {#requester.Requester.sorted_documents}
+
+
+
+    
+> `def sorted_documents(self, docs, keywords)`
+
+
+Calcule le score de pertinence des documents, 
+puis les ordonne.
+
+
+###### Args
+
+**`docs`** :&ensp;`dict`
+:   le dictionnaire des documents ids - fréquences
+
+
+**`keywords`** :&ensp;`dict`
+:   les mots-clés trés par opérateurs
+
+
+
+###### Returns
+
+**`result`** :&ensp;`list`
+:   la listes des documents ordonnées en fonction du score de pertinence
+
+
+
 
 
     
@@ -317,240 +551,6 @@ Parse un document xml de la forme :
 
 **`title`** :&ensp;`str`
 :   Le contenu de la balise title du fichier.
-
-
-
-
-
-    
-# Module `requester` {#requester}
-
-
-
-
-
-
-
-
-    
-## Classes
-
-
-    
-### Class `Requester` {#requester.Requester}
-
-
-
-> `class Requester(index, sim='euc')`
-
-
-Le requêteur qui utilise l'index créé par l'indexeur.
-
-
-#### Attributes
-
-**`index_folder`** :&ensp;`str`
-:   Le chemin de l'index.
-
-
-**`index`** :&ensp;`dict`
-:   L'index recupéré du fichier index.json.
-
-
-**`index_document`** :&ensp;`dict`
-:   L'index des documents récupérés du fichier index_document.json.
-
-
-**`document_size`** :&ensp;`int`
-:   Le nombre de document.
-
-
-**`sim`** :&ensp;`function`
-:   La fonction utilisée pour le calcule de similarité.
-
-
-**`tf`** :&ensp;`function`
-:   Fonction pour calcul du tf.
-
-
-**`idf`** :&ensp;`function`
-:   Fonction pour calcul de l'idf.
-
-
-**`tfidf`** :&ensp;`function`
-:   Fonction pour calcul du tfidf.
-
-
-
-#### Args
-
-**`index`** :&ensp;`str`
-:   Le chemin de l'index sur lequel effectuer les requêtes.
-
-
-**`sim`** :&ensp;`str`
-:   La méthode utilisée pour le calcul de similarité.
-
-
-
-
-
-
-
-
-
-    
-#### Methods
-
-
-    
-##### Method `filter_documents` {#requester.Requester.filter_documents}
-
-
-
-    
-> `def filter_documents(self, docs, keywords)`
-
-
-Les documents sont filtrés en fonction des opérateurs.
-
-
-###### Args
-
-**`docs`** :&ensp;`dict`
-:   le dictionnaire de documents ids - fréquences
-
-
-**`keywords`** :&ensp;`dict`
-:   les mots-clés trés par opérateurs
-
-
-
-###### Returns
-
-**`match_docs`** :&ensp;`dict`
-:   un nouveau dictionnaire contenant seulements
-            les documents respectants les règles des opérateurs
-
-
-
-    
-##### Method `filter_keywords` {#requester.Requester.filter_keywords}
-
-
-
-    
-> `def filter_keywords(self, keywords)`
-
-
-Répartit les mots-clés de la requête en sous-listes en fonction des opérateurs
-
-
-###### Args
-
-**`keywords`** :&ensp;`list`
-:   la liste des mots-clés
-
-
-
-###### Returns
-
-**`keywords_clean`** :&ensp;`list`
-:   la liste des mots-clés sans les opérateurs
-
-
-**`keywords_gr`** :&ensp;`dict`
-:   un dictionnaire avec les mots-clés triés par opérateur
-
-
-
-    
-##### Method `get_documents` {#requester.Requester.get_documents}
-
-
-
-    
-> `def get_documents(self, keywords_gr)`
-
-
-Extrait les documents qui contiennent les mots-clés de l'index.
-
-
-###### Args
-
-**`keywords`** :&ensp;`list`
-:   le dictionnaire des mots-clés trié par opérateur
-
-
-
-###### Returns
-
-**`extrac_docs`** :&ensp;`dict`
-:   un dictionnaire contenant 
-                les documents extraits,
-                les clés sont les ids des documents, 
-                les valeurs sont les fréquences associées
-
-
-
-    
-##### Method `request` {#requester.Requester.request}
-
-
-
-    
-> `def request(self, keywords)`
-
-
-Lance la requête.
-
-
-###### Args
-
-**`keywords`** :&ensp;`list`
-:   La liste de mots clés
-
-
-Trois opérateurs peuvent être utilisés avec les mots-clés :
-- + (plus) : le terme doit être présent
-- - (moins) : le terme doit être absent
-- ø (aucun opérateur) : le terme peut être absent ou présent
-
-###### Returns
-
-**`result`** :&ensp;`list`
-:   Le résultat de la requête.
-
-
-
-    
-##### Method `sorted_documents` {#requester.Requester.sorted_documents}
-
-
-
-    
-> `def sorted_documents(self, docs, keywords)`
-
-
-Calcule le score de pertinence des documents, 
-puis les ordonne.
-
-
-###### Args
-
-**`docs`** :&ensp;`dict`
-:   le dictionnaire des documents ids - fréquences
-
-
-**`keywords`** :&ensp;`dict`
-:   les mots-clés trés par opérateurs
-
-
-
-###### Returns
-
-**`result`** :&ensp;`list`
-:   la listes des documents ordonnées en fonction du score de pertinence
 
 
 
