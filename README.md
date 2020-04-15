@@ -86,6 +86,7 @@ argument | description
 -s {cos, euc}, --similarity {euc, euc} | type de similarité, euclidienne par défaut
 -h, --help | affiche l'aide
 
+Note : Si un seul mot-clé est retenu pour la recherche alors c'est la fréquence relative qui est utilsée peu importe l'option de similarité spécifiée.
 
 ### Remarque
 La documentation technique du code est disponible aux formats md, html et pdf dans le dossier docs du projet.
